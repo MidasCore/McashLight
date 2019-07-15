@@ -140,9 +140,9 @@ const NodeService = {
             const symbol = await contract.symbol().call();
             const decimals = typeof d === 'object' && d._decimals ? d : new BigNumber(d).toNumber();
             return {
-                name: typeof name === 'object' ? name._name: name,
-                symbol: typeof symbol === 'object' ? symbol._symbol: symbol,
-                decimals: typeof decimals === 'object' ? decimals._decimals: decimals
+                name: typeof name === 'object' ? name._name : name,
+                symbol: typeof symbol === 'object' ? symbol._symbol : symbol,
+                decimals: typeof decimals === 'object' ? decimals._decimals : decimals
             };
         } catch(ex) {
             logger.error(`Failed to fetch token ${ address }:`, ex);

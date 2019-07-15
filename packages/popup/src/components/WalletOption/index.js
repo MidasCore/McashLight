@@ -22,11 +22,11 @@ const WalletOption = props => {
             <FormattedMessage
                 id={ titleKey }
                 children={(value) => (
-                    <span className="title">{value}</span>
+                    <span className='title'>{value}</span>
                 )}
             />
-            <div className="tip"><FormattedMessage id={descKey}/></div>
-            <div className="iconWrap" />
+            <div className='tip'><FormattedMessage id={descKey}/></div>
+            <div className='iconWrap' />
         </div>
     );
 };

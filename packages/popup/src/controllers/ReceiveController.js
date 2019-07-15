@@ -27,9 +27,8 @@ class ReceiveController extends React.Component {
             PopupAPI.setSelectedToken(selectedCurrency);
             PopupAPI.changeState(APP_STATE.TRANSACTIONS);
             PopupAPI.changeDealCurrencyPage(0);
-        }else {
+        }else
             PopupAPI.changeState(APP_STATE.READY);
-        }
     }
 
     render() {
@@ -38,17 +37,17 @@ class ReceiveController extends React.Component {
         return (
             <div className='insetContainer receive'>
                 <div className='pageHeader'>
-                    <div className="back" onClick={() => this.onCancel() } />
-                    <FormattedMessage id="ACCOUNT.RECEIVE" />
+                    <div className='back' onClick={() => this.onCancel() } />
+                    <FormattedMessage id='ACCOUNT.RECEIVE' />
                 </div>
                 <div className='greyModal'>
-                    <div className="desc">
-                        <FormattedMessage id="ACCOUNT.RECEIVE.DESC" />
+                    <div className='desc'>
+                        <FormattedMessage id='ACCOUNT.RECEIVE.DESC' />
                     </div>
                     <QRCode
                         value={address}
                     />
-                    <div className="address">
+                    <div className='address'>
                         {address}
                     </div>
                     <div>
@@ -60,8 +59,8 @@ class ReceiveController extends React.Component {
                                 Toast.info(formatMessage({ id: 'TOAST.COPY' }), 2);
                             }}
                         >
-                            <a className="copyAddressBtn">
-                                <FormattedMessage id="ACCOUNT.RECEIVE.BUTTON" />
+                            <a className='copyAddressBtn'>
+                                <FormattedMessage id='ACCOUNT.RECEIVE.BUTTON' />
                             </a>
                         </CopyTextToClipboard>
                     </div>
@@ -69,7 +68,6 @@ class ReceiveController extends React.Component {
             </div>
         );
     }
-
-};
+}
 
 export default injectIntl(ReceiveController);

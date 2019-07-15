@@ -1,4 +1,4 @@
-import { setRecommendDappList } from '@mcashlight/popup/src/reducers/appReducer';
+// import { setRecommendDappList } from '@mcashlight/popup/src/reducers/appReducer';
 
 export default {
     init(duplex) {
@@ -169,7 +169,6 @@ export default {
         this.duplex.send('setSetting', setting, false);
     },
 
-
     //tronbank contract
     rentEnergy(_freezeAmount, _payAmount, _days, _energyAddress) {
         return this.duplex.send('rentEnergy', {
@@ -210,7 +209,7 @@ export default {
     },
 
     addCount(id) {
-        return this.duplex.send('addCount',id);
+        return this.duplex.send('addCount', id);
     },
 
     calculateRentCost(receiverAddress, freezeAmount, days, requestUrl) {
@@ -247,7 +246,7 @@ export default {
     },
 
     getDappList(isFromStorage) {
-        return this.duplex.send('getDappList',isFromStorage);
+        return this.duplex.send('getDappList', isFromStorage);
     },
 
     setDappList(dappList) {

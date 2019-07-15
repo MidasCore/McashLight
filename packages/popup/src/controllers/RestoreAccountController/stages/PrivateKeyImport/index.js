@@ -70,14 +70,14 @@ class PrivateKeyImport extends React.Component {
         return (
             <div className='insetContainer privateKeyImport'>
                 <div className='pageHeader'>
-                    <div className="back" onClick={ onCancel }></div>
-                    <FormattedMessage id="CREATION.RESTORE.PRIVATE_KEY.TITLE" />
+                    <div className='back' onClick={ onCancel }></div>
+                    <FormattedMessage id='CREATION.RESTORE.PRIVATE_KEY.TITLE' />
                 </div>
-                <div className={'greyModal'+(!isValid && error?' error':'')}>
+                <div className={`greyModal${!isValid && error ? ' error' : ''}`}>
                     <div className='modalDesc hasBottomMargin'>
                         <FormattedMessage id='PRIVATE_KEY_IMPORT.DESC' />
                     </div>
-                    <div className="inputUnit">
+                    <div className='inputUnit'>
                         <textarea
                             placeholder='Private Key Import'
                             className='privateKeyInput'
@@ -86,7 +86,7 @@ class PrivateKeyImport extends React.Component {
                             onChange={ this.onChange }
                             tabIndex={ 1 }
                         />
-                        {!isValid?<div className="tipError">{error?<FormattedMessage id={error} />:null}</div>:null}
+                        {!isValid ? <div className='tipError'>{error ? <FormattedMessage id={error} /> : null}</div> : null}
                     </div>
 
                     <div className='buttonRow'>

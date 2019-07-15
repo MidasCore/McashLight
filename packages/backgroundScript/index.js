@@ -7,7 +7,7 @@ import Utils from '@mcashlight/lib/utils';
 import transactionBuilder from '@mcashlight/lib/transactionBuilder';
 import McashWeb from 'mcashweb';
 
-import * as Sentry from '@sentry/browser';
+// import * as Sentry from '@sentry/browser';
 
 import { CONFIRMATION_TYPE } from '@mcashlight/lib/constants';
 import { BackgroundAPI } from '@mcashlight/lib/api';

@@ -21,7 +21,7 @@ import BankController from '@mcashlight/popup/src/controllers/TronBankController
 import BankRecordController from '@mcashlight/popup/src/controllers/BankRecordController';
 import BankDetailController from '@mcashlight/popup/src/controllers/BankDetailController';
 import BankHelplController from '@mcashlight/popup/src/controllers/TronBankHelp';
-import ActivityDetailController from '@mcashlight/popup/src/controllers/ActivityDetailController';
+// import ActivityDetailController from '@mcashlight/popup/src/controllers/ActivityDetailController';
 import DappListController from '@mcashlight/popup/src/controllers/DappListController';
 import ActiveAccountController from '@mcashlight/popup/src/controllers/ActiveAccountController';
 
@@ -38,10 +38,10 @@ class App extends React.Component {
         en: enMessages,
         zh: zhMessages,
         ja: jaMessages
-    }
+    };
 
     render() {
-        const { appState,accounts,prices,nodes,language,lock,version } = this.props;
+        const { appState, accounts, prices, nodes, language, lock, version } = this.props;
         let dom = null;
         switch(appState) {
             case APP_STATE.UNINITIALISED:
@@ -75,7 +75,7 @@ class App extends React.Component {
                 dom = <TransactionsController prices={prices} accounts={accounts} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
                 break;
             case APP_STATE.SETTING:
-                dom = <SettingController lock={lock} version={version} language={language} prices={prices} nodes={nodes} onCancel={ ()=>PopupAPI.changeState(APP_STATE.READY) } />
+                dom = <SettingController lock={lock} version={version} language={language} prices={prices} nodes={nodes} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
                 break;
             case APP_STATE.ADD_M20_TOKEN:
                 dom = <AddTokenController tokens={accounts.selected.tokens} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;

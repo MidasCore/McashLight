@@ -35,8 +35,8 @@ export const appReducer = createReducer({
     },
     version: '',
     dappList: {
-        recommend:[],
-        used:[]
+        recommend: [],
+        used: []
     }
 
 }, {
@@ -44,7 +44,7 @@ export const appReducer = createReducer({
         state.appState = payload;
     },
     [ setPriceList ]: (state, { payload }) => {
-        state.prices.priceList = payload[0];
+        state.prices.priceList = payload[ 0 ];
     },
     [ setCurrency ]: (state, { payload }) => {
         state.prices.selected = payload;

@@ -113,7 +113,7 @@ class Account {
         try {
             this.privateKey = privateKey;
             this.address = McashWeb.address.fromPrivateKey(privateKey);
-            logger.info("address = " + this.address);
+            logger.info(`address = ${ this.address}`);
         } catch (ex) { // eslint-disable-line
             throw new Error('INVALID_PRIVATE_KEY');
         }
@@ -248,13 +248,13 @@ class Account {
             if (filteredTokens.length > 0) {
                 for (const { key, value } of filteredTokens) {
                     let token = this.tokens.basic[ key ] || false;
-                    const filter = basicTokenPriceList.filter(({ first_token_id }) => first_token_id === key);
+                    const filter = basicTokenPriceList.filter(({ first_token_id: firstTokenId }) => firstTokenId === key);
                     const token20Filter = smartTokenPriceList.filter(({ fTokenAddr }) => key === fTokenAddr);
-                    let { precision = 0, price } = filter.length ? filter[0] : (token20Filter.length ? {
+                    const obj = filter.length ? filter[ 0 ] : (token20Filter.length ? {
                         price: token20Filter[ 0 ].price,
                         precision: token20Filter[ 0 ].sPrecision
                     } : { price: 0, precision: 0 });
-                    price = price / Math.pow(10, precision);
+                    const price = obj.price / Math.pow(10, obj.precision);
                     if ((!token && !StorageService.tokenCache.hasOwnProperty(key)) || (token && typeof token.imgUrl === 'undefined'))
                         await StorageService.cacheToken(key);
 
@@ -264,7 +264,7 @@ class Account {
                             abbr,
                             decimals,
                             imgUrl
-                        } = StorageService.tokenCache[key];
+                        } = StorageService.tokenCache[ key ];
 
                         token = {
                             balance: 0,
@@ -274,15 +274,15 @@ class Account {
                             imgUrl
                         };
                     }
-                    this.tokens.basic[key] = {
+                    this.tokens.basic[ key ] = {
                         ...token,
                         balance: value,
                         price
                     };
                 }
-            } else {
+            } else
                 this.tokens.basic = {};
-            }
+
             //this.tokens.smart = {};
             const addSmartTokens = Object.entries(this.tokens.smart).filter(([tokenId, token]) => {
                 return !token.abbr;
@@ -292,29 +292,29 @@ class Account {
                 if (contract) {
                     let balance;
                     const number = await contract.balanceOf(address).call();
-                    if (number.balance) {
+                    if (number.balance)
                         balance = new BigNumber(number.balance).toString();
-                    } else {
+                    else
                         balance = new BigNumber(number).toString();
-                    }
+
                     if (typeof token.name === 'object') {
                         const token2 = await NodeService.getSmartToken(tokenId);
-                        this.tokens.smart[tokenId] = token2;
-                    } else {
-                        this.tokens.smart[tokenId] = token;
-                    }
+                        this.tokens.smart[ tokenId ] = token2;
+                    } else
+                        this.tokens.smart[ tokenId ] = token;
+
                     // todo: check logo_url (imgUrl)
-                    this.tokens.smart[tokenId].imgUrl = false;
-                    this.tokens.smart[tokenId].balance = balance;
-                    this.tokens.smart[tokenId].price = 0;
+                    this.tokens.smart[ tokenId ].imgUrl = false;
+                    this.tokens.smart[ tokenId ].balance = balance;
+                    this.tokens.smart[ tokenId ].price = 0;
                 } else {
-                    this.tokens.smart[tokenId].balance = 0;
-                    this.tokens.smart[tokenId].price = 0;
+                    this.tokens.smart[ tokenId ].balance = 0;
+                    this.tokens.smart[ tokenId ].price = 0;
                 }
             }
             //
             let totalOwnMcashCount = new BigNumber(this.balance + this.stakeBalance + this.frozenBalance).shiftedBy(-8);
-            Object.entries({ ...this.tokens.basic, ...this.tokens.smart }).map(([tokenId, token]) => {
+            Object.entries({ ...this.tokens.basic, ...this.tokens.smart }).forEach(([tokenId, token]) => {
                 if (token.price !== 0) {
                     const price = token.price;
                     totalOwnMcashCount = totalOwnMcashCount.plus(new BigNumber(token.balance).shiftedBy(-token.decimals).multipliedBy(price));
@@ -340,13 +340,13 @@ class Account {
         //     .then((bandwidth = 0) => (
         //         this.bandwidth = bandwidth
         //     ));
-        const { energy_limit = 0, energy_used = 0, free_bandwidth_limit, bandwidth_limit = 0, free_bandwidth_used = 0, bandwidth_used = 0, total_energy_weight, total_energy_limit } = await NodeService.mcashWeb.mcash.getAccountResources(address);
-        this.energy = energy_limit;
-        this.energyUsed = energy_used;
-        this.netLimit = free_bandwidth_limit + bandwidth_limit;
-        this.netUsed = bandwidth_used + free_bandwidth_used;
-        this.totalEnergyWeight = total_energy_weight;
-        this.totalEnergyLimit = total_energy_limit;
+        const result = await NodeService.mcashWeb.mcash.getAccountResources(address);
+        this.energy = result.energy_limit || 0;
+        this.energyUsed = result.energy_used || 0;
+        this.netLimit = (result.free_bandwidth_limit || 0) + (result.bandwidth_limit || 0);
+        this.netUsed = (result.bandwidth_used || 0) + (result.free_bandwidth_used || 0);
+        this.totalEnergyWeight = result.total_energy_weight || 0;
+        this.totalEnergyLimit = result.total_energy_limit || 0;
     }
 
     async addSmartToken({ address, name, decimals, symbol }) {
@@ -479,9 +479,8 @@ class Account {
     async sendBasicToken(recipient, amount, token) {
         try {
             let tokenId = token;
-            if (typeof token === 'string') {
+            if (typeof token === 'string')
                 tokenId = parseInt(token, 10);
-            }
 
             const transaction = await NodeService.mcashWeb.transactionBuilder.sendToken(
                 recipient,
@@ -506,7 +505,7 @@ class Account {
 
             // todo: check feeLimit
             await contract.transfer(recipient, amount).send(
-                {feeLimit:10 * Math.pow(10,8)},
+                { feeLimit: 10 * Math.pow(10, 8) },
                 this.privateKey
             );
             return true;

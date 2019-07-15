@@ -41,7 +41,7 @@
         "no-alert": [ "error" ],
         "no-else-return": [ "error" ],
         "no-extra-bind": [ "error" ],
-        "camelcase": [ "error" ],
+        // "camelcase": [ "error" ],
         "lines-between-class-members": [ "error" ],
         "no-multiple-empty-lines": [ "error", { "max": 1 } ],
         "no-tabs": [ "error" ],
@@ -80,7 +80,7 @@
         "react/jsx-closing-tag-location": [ "error" ],
         "react/no-children-prop": [ 0 ],
         "react/prop-types": [ 0 ],
-        "no-param-reassign": [ 0 ]        
+        "no-param-reassign": [ 0 ]
     },
     "globals": {
         "EXTENSION_ID": false,

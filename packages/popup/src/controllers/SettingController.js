@@ -1,13 +1,15 @@
 import React from 'react';
 import swal from 'sweetalert2';
 import { BigNumber } from 'bignumber.js';
-import { PopupAPI } from "@mcashlight/lib/api";
+import { PopupAPI } from '@mcashlight/lib/api';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import Button from "@mcashlight/popup/src/components/Button";
-import { VALIDATION_STATE } from "@mcashlight/lib/constants";
-import { app } from "@mcashlight/popup/src";
+import Button from '@mcashlight/popup/src/components/Button';
+import { VALIDATION_STATE } from '@mcashlight/lib/constants';
+import { app } from '@mcashlight/popup/src';
 
-class SettingController extends  React.Component {
+class SettingController extends React.Component {
+    cellRef = null;
+
     constructor(props) {
         super(props);
         this.state = {
@@ -39,53 +41,52 @@ class SettingController extends  React.Component {
                 { name: '中文', key: 'zh', selected: false },
                 { name: '日本語', key: 'ja', selected: false },
             ],
-            autoLock:[{
-                time:60 * 1000,
-                name:'SETTING.TITLE.AUTO_LOCK.1_MIN'
-            },{
-                time:5 * 60 * 1000,
-                name:'SETTING.TITLE.AUTO_LOCK.5_MIN'
-            },{
-                time:10 * 60 * 1000,
-                name:'SETTING.TITLE.AUTO_LOCK.10_MIN'
-            },{
-                time:30 * 60 * 1000,
-                name:'SETTING.TITLE.AUTO_LOCK.30_MIN'
-            },{
-                time:0,
-                name:'SETTING.TITLE.AUTO_LOCK.NEVER'
+            autoLock: [{
+                time: 60 * 1000,
+                name: 'SETTING.TITLE.AUTO_LOCK.1_MIN'
+            }, {
+                time: 5 * 60 * 1000,
+                name: 'SETTING.TITLE.AUTO_LOCK.5_MIN'
+            }, {
+                time: 10 * 60 * 1000,
+                name: 'SETTING.TITLE.AUTO_LOCK.10_MIN'
+            }, {
+                time: 30 * 60 * 1000,
+                name: 'SETTING.TITLE.AUTO_LOCK.30_MIN'
+            }, {
+                time: 0,
+                name: 'SETTING.TITLE.AUTO_LOCK.NEVER'
             }]
         };
     }
 
-    setting(index){
+    setting(index) {
         const { nodes } = this.props;
-        const options = this.refs.cell.getElementsByClassName('option');
-        if(index !==0 ){
-            for(let i=0;i<options.length;i++){
-                if(index === i){
-                    if(options[i].className.match(/active/)){
-                        options[i].classList.remove('active');
-                    }else{
-                        options[i].classList.add('active');
-                    }
+        if (!this.cellRef)
+            return;
+        const options = this.cellRef.getElementsByClassName('option');
+        if(index !== 0 ) {
+            for(let i = 0;i < options.length;i++) {
+                if(index === i) {
+                    if(options[ i ].className.match(/active/))
+                        options[ i ].classList.remove('active');
+                    else
+                        options[ i ].classList.add('active');
                 } else {
-                    options[i].classList.remove('active');
-                    options[0].getElementsByClassName('settingWrap')[0].style.height = '0px';
+                    options[ i ].classList.remove('active');
+                    options[ 0 ].getElementsByClassName('settingWrap')[ 0 ].style.height = '0px';
                 }
             }
         } else {
-            const idx = parseInt(options[0].getElementsByClassName('settingWrap')[0].style.height);
-            if(!idx){
-                options[0].getElementsByClassName('settingWrap')[0].style.height = (16 + 122 * Object.keys(nodes.nodes).length)+'px';
-                if(!options[0].className.match(/active/)) {
-                    options[0].classList.add('active');
-                }
+            const idx = parseInt(options[ 0 ].getElementsByClassName('settingWrap')[ 0 ].style.height);
+            if(!idx) {
+                options[ 0 ].getElementsByClassName('settingWrap')[ 0 ].style.height = `${16 + (122 * Object.keys(nodes.nodes).length)}px`;
+                if(!options[ 0 ].className.match(/active/))
+                    options[ 0 ].classList.add('active');
             } else {
-                options[0].getElementsByClassName('settingWrap')[0].style.height = '0px';
-                if(options[0].className.match(/active/)) {
-                    options[0].classList.remove('active');
-                }
+                options[ 0 ].getElementsByClassName('settingWrap')[ 0 ].style.height = '0px';
+                if(options[ 0 ].className.match(/active/))
+                    options[ 0 ].classList.remove('active');
             }
         }
     }
@@ -139,7 +140,6 @@ class SettingController extends  React.Component {
     }
 
     onCustomNodeChange(nodeType, value, required = true) {
-
         if(!value.length && required) {
             return this.setState({
                 customNode: {
@@ -208,7 +208,7 @@ class SettingController extends  React.Component {
         });
 
         app.getNodes();
-        swal(formatMessage({id:'SETTING.SUCCESS.ADD_NODE'}),'','success');
+        swal(formatMessage({ id: 'SETTING.SUCCESS.ADD_NODE' }), '', 'success');
         this.setState({
             customNode: {
                 name: {
@@ -237,20 +237,20 @@ class SettingController extends  React.Component {
     }
 
     formatCurrencyValue = (value) => {
-        if (!value) {
+        if (!value)
             return value;
-        }
-        const v = new BigNumber(value);
-        if (v.lt(new BigNumber(1e-10))) {
-            return v;
-        }
-        return v.toFixed();
-    }
 
-    render(){
-        const { prices,nodes,onCancel,language,lock,version} = this.props;
+        const v = new BigNumber(value);
+        if (v.lt(new BigNumber(1e-10)))
+            return v;
+
+        return v.toFixed();
+    };
+
+    render() {
+        const { prices, nodes, onCancel, language, lock, version } = this.props;
         const { formatMessage } = this.props.intl;
-        const currentNode = nodes.nodes[nodes.selected];
+        const currentNode = nodes.nodes[ nodes.selected ];
         const {
             name,
             fullNode,
@@ -259,93 +259,94 @@ class SettingController extends  React.Component {
             mcashScan,
             isValid
         } = this.state.customNode;
-        const {languages,autoLock} = this.state;
+        const { languages, autoLock } = this.state;
         return (
             <div className='insetContainer choosingType2'>
                 <div className='pageHeader'>
-                    <div className="back" onClick={ onCancel }></div>
-                    <FormattedMessage id="SETTING.TITLE" />
+                    <div className='back' onClick={ onCancel } />
+                    <FormattedMessage id='SETTING.TITLE' />
                 </div>
-                <div className='greyModal' ref="cell">
-                    <div className="optionsWrap">
-                        <div className="option" onClick={ ()=>{this.setting(0)} }>
-                            <div className="txt">
-                                <div className="span">
-                                    <FormattedMessage id="SETTING.TITLE.NODE" />
-                                    <div className="unit">{currentNode.name}</div>
+                <div className='greyModal' ref={ ref => this.cellRef = ref }>
+                    <div className='optionsWrap'>
+                        <div className='option' onClick={ () => { this.setting(0); } }>
+                            <div className='txt'>
+                                <div className='span'>
+                                    <FormattedMessage id='SETTING.TITLE.NODE' />
+                                    <div className='unit'>{currentNode.name}</div>
                                 </div>
-                                <div className="settingWrap">
-                                    <div className="nodeWrap">
+                                <div className='settingWrap'>
+                                    <div className='nodeWrap'>
                                         {
-                                            Object.entries(nodes.nodes).map(([nodeId,node])=>{
+                                            Object.entries(nodes.nodes).map(([nodeId, node], index) => {
                                                 return (
-                                                    <div className={"nodeItem"+(nodeId === nodes.selected?" selected":"")} onClick={(e)=>{
+                                                    <div key={index} className={`nodeItem${nodeId === nodes.selected ? ' selected' : ''}`} onClick={(e) => {
                                                         e.stopPropagation();
                                                         PopupAPI.selectNode(nodeId);
                                                         app.getNodes();
-                                                    }}>
-                                                        <div className="title">{node.name}</div>
-                                                        <div className="cell">
-                                                            <FormattedMessage id="SETTINGS.NODES.FULL_NODE" />
+                                                    }}
+                                                    >
+                                                        <div className='title'>{node.name}</div>
+                                                        <div className='cell'>
+                                                            <FormattedMessage id='SETTINGS.NODES.FULL_NODE' />
                                                             <span>{node.fullNode}</span>
                                                         </div>
-                                                        <div className="cell">
-                                                            <FormattedMessage id="SETTINGS.NODES.SOLIDITY_NODE" />
+                                                        <div className='cell'>
+                                                            <FormattedMessage id='SETTINGS.NODES.SOLIDITY_NODE' />
                                                             <span>{node.solidityNode}</span>
                                                         </div>
                                                         {/*<div className="cell">*/}
                                                         {/*<FormattedMessage id="SETTINGS.NODES.EVENT_SERVER" />*/}
                                                         {/*<span>{node.eventServer}</span>*/}
                                                         {/*</div>*/}
-                                                        <div className="cell">
-                                                            <FormattedMessage id="SETTINGS.NODES.SCAN" />
+                                                        <div className='cell'>
+                                                            <FormattedMessage id='SETTINGS.NODES.SCAN' />
                                                             <span>{ !node.hideApi ? node.mcashScan : '' }</span>
                                                         </div>
                                                     </div>
-                                                )
+                                                );
                                             })
                                         }
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="option" onClick={ ()=>{this.setting(1)} }   >
-                            <div className="txt">
-                                <div className="span">
-                                    <FormattedMessage id="SETTING.TITLE.ADD_NODE" />
+                        <div className='option' onClick={ () => { this.setting(1); } } >
+                            <div className='txt'>
+                                <div className='span'>
+                                    <FormattedMessage id='SETTING.TITLE.ADD_NODE' />
                                 </div>
-                                <div className="settingWrap" onClick={(e)=>{e.stopPropagation()}}>
-                                    <div className={"input-group"+(!isValid && name.state === VALIDATION_STATE.INVALID ? ' error':'')}>
+                                <div className='settingWrap' onClick={(e) => { e.stopPropagation(); }}>
+                                    <div className={`input-group${!isValid && name.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>
                                         <label>
-                                            <FormattedMessage id="SETTINGS.CUSTOM_NODE.NAME" />
+                                            <FormattedMessage id='SETTINGS.CUSTOM_NODE.NAME' />
                                         </label>
-                                        <div className="input">
-                                            <input type="text" value={name.value} placeholder={formatMessage({id:"SETTINGS.CUSTOM_NODE.NAME.PLACEHOLDER"})} onChange={ (e)=>this.onCustomNameChange(e.target.value) }/>
+                                        <div className='input'>
+                                            <input type='text' value={name.value} placeholder={formatMessage({ id: 'SETTINGS.CUSTOM_NODE.NAME.PLACEHOLDER' })} onChange={ (e) => this.onCustomNameChange(e.target.value) }/>
                                         </div>
                                         {
-                                            !isValid && name.state === VALIDATION_STATE.INVALID ? <div className="tipError"><FormattedMessage id="EXCEPTION.ADD_NODE.NAME" /></div>:null
+                                            !isValid && name.state === VALIDATION_STATE.INVALID ? <div className='tipError'><FormattedMessage id='EXCEPTION.ADD_NODE.NAME' /></div> : null
                                         }
                                     </div>
-                                    <div className={"input-group"+(!isValid && fullNode.state === VALIDATION_STATE.INVALID ? ' error':'')}>
+                                    <div className={`input-group${!isValid && fullNode.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>
                                         <label>
-                                            <FormattedMessage id="SETTINGS.NODES.FULL_NODE" />
+                                            <FormattedMessage id='SETTINGS.NODES.FULL_NODE' />
                                         </label>
-                                        <div className="input">
-                                            <input type="text" value={fullNode.value} placeholder={formatMessage({id:"SETTINGS.CUSTOM_NODE.FULL_NODE.PLACEHOLDER"})} onChange={ e => this.onCustomNodeChange('fullNode', e.target.value) } />
+                                        <div className='input'>
+                                            <input type='text' value={fullNode.value} placeholder={formatMessage({ id: 'SETTINGS.CUSTOM_NODE.FULL_NODE.PLACEHOLDER' })} onChange={ e => this.onCustomNodeChange('fullNode', e.target.value) } />
                                         </div>
                                         {
-                                            !isValid && fullNode.state === VALIDATION_STATE.INVALID ? <div className="tipError"><FormattedMessage id="EXCEPTION.ADD_NODE.NODE_URL" /></div>:null
+                                            !isValid && fullNode.state === VALIDATION_STATE.INVALID ? <div className='tipError'><FormattedMessage id='EXCEPTION.ADD_NODE.NODE_URL' /></div> : null
                                         }
                                     </div>
-                                    <div className={"input-group"+(!isValid && solidityNode.state === VALIDATION_STATE.INVALID ? ' error':'')}>
+                                    <div className={`input-group${!isValid && solidityNode.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>
                                         <label>
-                                            <FormattedMessage id="SETTINGS.NODES.SOLIDITY_NODE" />
+                                            <FormattedMessage id='SETTINGS.NODES.SOLIDITY_NODE' />
                                         </label>
-                                        <div className="input">
-                                            <input type="text" value={solidityNode.value} placeholder={formatMessage({id:"SETTINGS.CUSTOM_NODE.SOLIDITY_NODE.PLACEHOLDER"})} onChange={ e => this.onCustomNodeChange('solidityNode', e.target.value) }/>
+                                        <div className='input'>
+                                            <input type='text' value={solidityNode.value} placeholder={formatMessage({ id: 'SETTINGS.CUSTOM_NODE.SOLIDITY_NODE.PLACEHOLDER' })} onChange={ e => this.onCustomNodeChange('solidityNode', e.target.value) }/>
                                         </div>
                                         {
-                                            !isValid && solidityNode.state === VALIDATION_STATE.INVALID ? <div className="tipError"><FormattedMessage id="EXCEPTION.ADD_NODE.NODE_URL" /></div>:null
+                                            !isValid && solidityNode.state === VALIDATION_STATE.INVALID ? <div className='tipError'><FormattedMessage id='EXCEPTION.ADD_NODE.NODE_URL' /></div> : null
                                         }
                                     </div>
                                     {/*<div className={"input-group"+(!isValid && eventServer.state === VALIDATION_STATE.INVALID ? ' error':'')}>*/}
@@ -359,78 +360,80 @@ class SettingController extends  React.Component {
                                     {/*!isValid && eventServer.state === VALIDATION_STATE.INVALID ? <div className="tipError"><FormattedMessage id="EXCEPTION.ADD_NODE.NODE_URL" /></div>:null*/}
                                     {/*}*/}
                                     {/*</div>*/}
-                                    <div className={"input-group"+(!isValid && mcashScan.state === VALIDATION_STATE.INVALID ? ' error':'')}>
+                                    <div className={`input-group${!isValid && mcashScan.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>
                                         <label>
-                                            <FormattedMessage id="SETTINGS.CUSTOM_NODE.SCAN" />
+                                            <FormattedMessage id='SETTINGS.CUSTOM_NODE.SCAN' />
                                         </label>
-                                        <div className="input">
-                                            <input type="text" value={mcashScan.value} placeholder={formatMessage({id:"SETTINGS.CUSTOM_NODE.SCAN.PLACEHOLDER"})} onChange={ e => this.onCustomNodeChange('mcashScan', e.target.value, false) } />
+                                        <div className='input'>
+                                            <input type='text' value={mcashScan.value} placeholder={formatMessage({ id: 'SETTINGS.CUSTOM_NODE.SCAN.PLACEHOLDER' })} onChange={ e => this.onCustomNodeChange('mcashScan', e.target.value, false) } />
                                         </div>
                                         {
-                                            !isValid && mcashScan.state === VALIDATION_STATE.INVALID ? <div className="tipError"><FormattedMessage id="EXCEPTION.ADD_NODE.NODE_URL" /></div>:null
+                                            !isValid && mcashScan.state === VALIDATION_STATE.INVALID ? <div className='tipError'><FormattedMessage id='EXCEPTION.ADD_NODE.NODE_URL' /></div> : null
                                         }
                                     </div>
                                     <Button
                                         id='SETTINGS.CUSTOM_NODE'
                                         isValid={ isValid }
-                                        onClick={ (e)=>{this.addCustomNode(e)} }
+                                        onClick={ (e) => { this.addCustomNode(e); } }
                                     />
                                 </div>
                             </div>
                         </div>
-                        <div className="option" onClick={ ()=>{this.setting(2)} }>
-                            <div className="txt">
-                                <div className="span">
-                                    <FormattedMessage id="SETTING.TITLE.CURRENCY" />
-                                    <div className="unit">{prices.selected}</div>
+                        <div className='option' onClick={ () => { this.setting(2); } }>
+                            <div className='txt'>
+                                <div className='span'>
+                                    <FormattedMessage id='SETTING.TITLE.CURRENCY' />
+                                    <div className='unit'>{prices.selected}</div>
                                 </div>
-                                <div className="settingWrap">
+                                <div className='settingWrap'>
                                     {
-                                        Object.entries(prices.priceList).map(([key,val])=>(
+                                        Object.entries(prices.priceList).map(([key, val]) => (
                                             <div
                                                 key={key}
-                                                onClick={(e)=>{e.stopPropagation();PopupAPI.selectCurrency(key);}}
-                                                className={"unit"+(key === prices.selected?" selected":"")}
-                                            >{`${key} (${this.formatCurrencyValue(val)})`}</div>
+                                                onClick={(e) => { e.stopPropagation();PopupAPI.selectCurrency(key); }}
+                                                className={`unit${key === prices.selected ? ' selected' : ''}`}
+                                            >{`${key} (${this.formatCurrencyValue(val)})`}
+                                            </div>
                                         ))
                                     }
                                 </div>
                             </div>
                         </div>
-                        <div className="option" onClick={ ()=>{this.setting(3)} }>
-                            <div className="txt">
-                                <div className="span">
-                                    <FormattedMessage id="SETTING.TITLE.LANGUAGE" />
-                                    <div className="unit">
+                        <div className='option' onClick={ () => { this.setting(3); } }>
+                            <div className='txt'>
+                                <div className='span'>
+                                    <FormattedMessage id='SETTING.TITLE.LANGUAGE' />
+                                    <div className='unit'>
                                         {
-                                            languages.filter(({key})=>key === language)[0].name
+                                            languages.filter(({ key }) => key === language)[ 0 ].name
                                         }
                                     </div>
                                 </div>
-                                <div className="settingWrap">
+                                <div className='settingWrap'>
                                     {
-                                        languages.map(({name,selected,key})=><div key={name} onClick={(e)=>{e.stopPropagation();PopupAPI.setLanguage(key);}} className={"unit"+(key === language?" selected":"")}>{name}</div>)
+                                        languages.map(({ name, selected, key }) => <div key={name} onClick={(e) => { e.stopPropagation();PopupAPI.setLanguage(key); }} className={`unit${key === language ? ' selected' : ''}`}>{name}</div>)
                                     }
                                 </div>
                             </div>
                         </div>
-                        <div className="option" onClick={() =>{this.setting(4)}   }>
-                            <div className="txt">
-                                <div className="span">
-                                    <FormattedMessage id="SETTING.TITLE.AUTO_LOCK" />
-                                    <div className="unit">
-                                        <FormattedMessage id={autoLock.filter(({time})=>time === lock.duration)[0].name} />
+                        <div className='option' onClick={() => { this.setting(4); } }>
+                            <div className='txt'>
+                                <div className='span'>
+                                    <FormattedMessage id='SETTING.TITLE.AUTO_LOCK' />
+                                    <div className='unit'>
+                                        <FormattedMessage id={autoLock.filter(({ time }) => time === lock.duration)[ 0 ].name} />
                                     </div>
                                 </div>
-                                <div className="settingWrap">
+                                <div className='settingWrap'>
                                     {
-                                        autoLock.map(({name,time})=>(
-                                            <div key={time} onClick={async (e)=>{
+                                        autoLock.map(({ name, time }) => (
+                                            <div key={time} onClick={async (e) => {
                                                 e.stopPropagation();
-                                                let setting = await PopupAPI.getSetting();
-                                                setting.lock={lockTime:new Date().getTime(),duration:time};
+                                                const setting = await PopupAPI.getSetting();
+                                                setting.lock = { lockTime: new Date().getTime(), duration: time };
                                                 PopupAPI.setSetting(setting);
-                                            }} className={"unit"+(time === lock.duration ? " selected":"")}>
+                                            }} className={`unit${time === lock.duration ? ' selected' : ''}`}
+                                            >
                                                 <FormattedMessage id={name} />
                                             </div>
                                         ))
@@ -439,20 +442,19 @@ class SettingController extends  React.Component {
                             </div>
 
                         </div>
-                        <div className="option" onClick={() =>{PopupAPI.lockWallet()}   }>
-                            <div className="txt">
-                                <FormattedMessage id="SETTING.TITLE.LOCK" />
+                        <div className='option' onClick={() => { PopupAPI.lockWallet(); } }>
+                            <div className='txt'>
+                                <FormattedMessage id='SETTING.TITLE.LOCK' />
                             </div>
                         </div>
                     </div>
-                    <div className="version">
-                        <FormattedMessage id="COMMON.CURRENT_VERSION" values={{version}} />
+                    <div className='version'>
+                        <FormattedMessage id='COMMON.CURRENT_VERSION' values={{ version }} />
                     </div>
                 </div>
             </div>
         );
     }
-
-};
+}
 
 export default injectIntl(SettingController);

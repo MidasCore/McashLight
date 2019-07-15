@@ -9,7 +9,7 @@ import { addLocaleData } from 'react-intl';
 import en from 'react-intl/locale-data/en';
 import zh from 'react-intl/locale-data/zh';
 import ja from 'react-intl/locale-data/ja';
-import * as Sentry from '@sentry/browser';
+// import * as Sentry from '@sentry/browser';
 import { Provider } from 'react-redux';
 import { configureStore, getDefaultMiddleware } from 'redux-starter-kit';
 import { PopupAPI } from '@mcashlight/lib/api';
@@ -91,10 +91,10 @@ export const app = {
     async getAppState() {
         PopupAPI.init(this.duplex);
         const setting = await PopupAPI.getSetting();
-        if(setting.lock.duration !== 0 && new Date().getTime() - setting.lock.lockTime > setting.lock.duration) {
+        if(setting.lock.duration !== 0 && new Date().getTime() - setting.lock.lockTime > setting.lock.duration)
             PopupAPI.lockWallet();
-        }
-        let [
+
+        const [
             appState,
             nodes,
             accounts,
@@ -114,13 +114,14 @@ export const app = {
             PopupAPI.getLanguage(),
         ]);
         const lang = navigator.language || navigator.browserLanguage;
-        if ( lang.indexOf('zh') > -1 ) {
-            language = language || 'zh';
-        } else if ( lang.indexOf('ja') > -1 ) {
-            language = language || 'ja';
-        } else {
-            language = language || 'en';
-        }
+        let currentLang = 'en';
+        if ( lang.indexOf('zh') > -1 )
+            currentLang = language || 'zh';
+        else if ( lang.indexOf('ja') > -1 )
+            currentLang = language || 'ja';
+        else
+            currentLang = language || 'en';
+
         this.store.dispatch(setAppState(appState));
         this.store.dispatch(setNodes(nodes));
         this.store.dispatch(setAccounts(accounts));
@@ -128,7 +129,7 @@ export const app = {
         this.store.dispatch(setCurrency(prices.selected));
         this.store.dispatch(setConfirmations(confirmations));
         this.store.dispatch(setToken(selectedToken));
-        this.store.dispatch(setLanguage(language));
+        this.store.dispatch(setLanguage(currentLang));
         this.store.dispatch(setSetting(setting));
         this.store.dispatch(setVersion(version));
         if(selectedAccount)
@@ -197,7 +198,6 @@ export const app = {
         this.duplex.on('setDappList', dappList => this.store.dispatch(
             setDappList(dappList)
         ));
-
     },
 
     render() {

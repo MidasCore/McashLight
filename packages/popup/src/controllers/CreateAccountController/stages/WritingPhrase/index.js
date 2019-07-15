@@ -16,7 +16,7 @@ const WritingPhrase = props => {
     return (
         <div className='insetContainer writingPhrase'>
             <div className='pageHeader'>
-                <div className="back" onClick={ onCancel }></div>
+                <div className='back' onClick={ onCancel }></div>
                 <FormattedMessage id='CREATION.CREATE.TITLE' />
             </div>
             <div className='greyModal'>
@@ -32,10 +32,10 @@ const WritingPhrase = props => {
                 </div>
                 <div className='buttonRow'>
                     {/*<Button*/}
-                        {/*id='BUTTON.GO_BACK'*/}
-                        {/*type={ BUTTON_TYPE.DANGER }*/}
-                        {/*onClick={ onCancel }*/}
-                        {/*tabIndex={ 2 }*/}
+                    {/*id='BUTTON.GO_BACK'*/}
+                    {/*type={ BUTTON_TYPE.DANGER }*/}
+                    {/*onClick={ onCancel }*/}
+                    {/*tabIndex={ 2 }*/}
                     {/*/>*/}
                     <Button
                         id='BUTTON.CONTINUE'

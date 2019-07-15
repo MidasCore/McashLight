@@ -26,11 +26,11 @@ class ConfirmingPhrase extends React.Component {
 
         // if(correctOrder[ nextIndex ] !== wordIndex)
         //     return;
-        if(selected.map((v)=>v.wordIndex).includes(wordIndex)){
-            selected.splice(selected.map((v)=>v.word).indexOf(word),1);
-        }else{
-            selected.push({wordIndex,word});
-        }
+        if(selected.map((v) => v.wordIndex).includes(wordIndex))
+            selected.splice(selected.map((v) => v.word).indexOf(word), 1);
+        else
+            selected.push({ wordIndex, word });
+
         this.setState({
             isValid: nextIndex === 11,
             selected
@@ -63,8 +63,8 @@ class ConfirmingPhrase extends React.Component {
             <div className='options'>
                 { words.map(({ word, index }) => (
                     <div
-                        className={ `word ${ selected.map(v=>v.wordIndex).includes(index) ? 'correct' : '' }` }
-                        onClick={ () => this.onClick(index,word) }
+                        className={ `word ${ selected.map(v => v.wordIndex).includes(index) ? 'correct' : '' }` }
+                        onClick={ () => this.onClick(index, word) }
                         key={ index }
                     >
                         { word }
@@ -77,10 +77,10 @@ class ConfirmingPhrase extends React.Component {
     onSubmit(selected, correctOrder) {
         const { formatMessage } = this.props.intl;
         const { onSubmit } = this.props;
-        const selected2 = selected.map(v=>v.wordIndex);
-        for(let v of correctOrder) {
-            if(v !== selected2[v]) {
-                T.notify(formatMessage({id:'CREATION.CREATE.CONFIRM.MNEMONIC.DIALOG'}));
+        const selected2 = selected.map(v => v.wordIndex);
+        for(const v of correctOrder) {
+            if(v !== selected2[ v ]) {
+                T.notify(formatMessage({ id: 'CREATION.CREATE.CONFIRM.MNEMONIC.DIALOG' }));
                 return;
             }
         }
@@ -92,12 +92,12 @@ class ConfirmingPhrase extends React.Component {
             onCancel
         } = this.props;
 
-        const { isValid,selected,correctOrder } = this.state;
+        const { isValid, selected, correctOrder } = this.state;
 
         return (
             <div className='insetContainer confirmingPhrase'>
                 <div className='pageHeader'>
-                    <div className="back" onClick={ onCancel }></div>
+                    <div className='back' onClick={ onCancel } />
                     <FormattedMessage id='CREATION.CREATE.CONFIRM.MNEMONIC.TITLE' />
                 </div>
                 <div className='greyModal'>
@@ -105,9 +105,9 @@ class ConfirmingPhrase extends React.Component {
                     <div className='modalDesc'>
                         <FormattedMessage id='CONFIRMING_PHRASE' />
                     </div>
-                    <div className="wordList">
+                    <div className='wordList'>
                         {
-                            selected.map(v=><div className="word">{v.word}</div>)
+                            selected.map((v, i) => <div key={i} className='word'>{v.word}</div>)
                         }
                     </div>
                     { this.renderOptions() }
@@ -115,7 +115,7 @@ class ConfirmingPhrase extends React.Component {
                         <Button
                             id='BUTTON.CONFIRM'
                             isValid={ isValid }
-                            onClick={ () => isValid && this.onSubmit(selected,correctOrder) }
+                            onClick={ () => isValid && this.onSubmit(selected, correctOrder) }
                             tabIndex={ 1 }
                         />
                     </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import Toast,{ T } from 'react-toast-mobile';
+// import Toast, { T } from 'react-toast-mobile';
+import Toast from 'react-toast-mobile';
 import Button from '@mcashlight/popup/src/components/Button';
 import McashWeb from 'mcashweb';
 import Dropdown from 'react-dropdown';

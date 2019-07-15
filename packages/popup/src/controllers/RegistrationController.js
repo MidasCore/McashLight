@@ -14,12 +14,12 @@ class RegistrationController extends React.Component {
             hasLength: false,
             hasSpecial: false,
             isValid: VALIDATION_STATE.NONE,
-            showCriteria:false
+            showCriteria: false
         },
         repeatPassword: {
             value: '',
             isValid: VALIDATION_STATE.NONE,
-            showCriteria:false
+            showCriteria: false
         },
         loading: false,
         error: false,
@@ -66,12 +66,11 @@ class RegistrationController extends React.Component {
 
         let isValid = trimmed.length ? VALIDATION_STATE.INVALID : VALIDATION_STATE.NONE;
 
-        if(trimmed.length && trimmed === password.value){
+        if(trimmed.length && trimmed === password.value) {
             isValid = VALIDATION_STATE.VALID;
             showCriteria = false;
-        }else{
+        }else
             showCriteria = true;
-        }
 
         this.setState({
             repeatPassword: {
@@ -111,25 +110,27 @@ class RegistrationController extends React.Component {
         const arePasswordsValid =
             password.isValid === VALIDATION_STATE.VALID &&
             repeatPassword.isValid === VALIDATION_STATE.VALID;
-        const fliterLanguage = languages.filter(v=>v.key===language)[0];
+        const fliterLanguage = languages.filter(v => v.key === language)[ 0 ];
         return (
             <div className='insetContainer logoWrap'>
-                <div className="setLanguage">
-                    <div className={"language "+fliterLanguage.key}>
+                <div className='setLanguage'>
+                    <div className={`language ${fliterLanguage.key}`}>
                         {
                             fliterLanguage.name
                         }
-                        <div className="drop">
+                        <div className='drop'>
                             {
-                                languages.map(({key,name})=><div onClick={ ()=>PopupAPI.setLanguage(key) } className={"item "+key}>{name}</div>)
+                                languages.map(({ key, name }, index) => (
+                                    <div key={index} className={`item ${key}`} onClick={ () => PopupAPI.setLanguage(key) }>{name}</div>
+                                ))
                             }
                         </div>
                     </div>
                 </div>
                 <div className='pageHeader hasBottomMargin'>
-                    <div className="pageHeaderLogoWrap">
-                        <div className="logo1"></div>
-                        <div className="logo2"></div>
+                    <div className='pageHeaderLogoWrap'>
+                        <div className='logo1' />
+                        <div className='logo2' />
                     </div>
                 </div>
                 { error ? (
@@ -150,7 +151,7 @@ class RegistrationController extends React.Component {
                             tabIndex={ 1 }
                         />
                         {
-                            password.showCriteria?
+                            password.showCriteria ?
                                 <div className='criteria'>
                                     <InputCriteria id='PASSWORD_CRITERIA.HAS_LENGTH' isValid={ password.hasLength } />
                                     <InputCriteria id='PASSWORD_CRITERIA.HAS_SPECIAL' isValid={ password.hasSpecial } />
@@ -171,7 +172,7 @@ class RegistrationController extends React.Component {
                             tabIndex={ 2 }
                         />
                         {
-                            repeatPassword.showCriteria?
+                            repeatPassword.showCriteria ?
                                 <div className='criteria'>
                                     <InputCriteria id='PASSWORD_CRITERIA.NO_REPEAT' isValid={ !repeatPassword.showCriteria } />
                                 </div>
@@ -186,7 +187,7 @@ class RegistrationController extends React.Component {
                         onClick={ this.onButtonClick }
                         tabIndex={ 3 }
                     />
-                    <div className="passwordNotForgot">
+                    <div className='passwordNotForgot'>
                         <FormattedMessage id='PASSWORD_TIP.NOT_FORGOT' />
                     </div>
                 </div>

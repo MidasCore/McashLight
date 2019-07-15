@@ -70,7 +70,7 @@ export default {
     },
 
     setDappList(dappList) {
-        this.duplex.send('popup', 'setDappList',dappList ,false);
+        this.duplex.send('popup', 'setDappList', dappList, false);
     }
 
 };

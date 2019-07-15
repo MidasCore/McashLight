@@ -54,7 +54,7 @@ const copyTextToClipboard = (text) => {
     //Remove the textbox field from the document.body, so no other JavaScript nor
     //other elements can get access to this.
     document.body.removeChild(copyFrom);
-}
+};
 
 export default class CopyTextToClipboard extends React.PureComponent {
     static propTypes = {
@@ -83,9 +83,8 @@ export default class CopyTextToClipboard extends React.PureComponent {
         if (text) {
             try {
                 copyTextToClipboard(text);
-                if (onCopy) {
+                if (onCopy)
                     onCopy(text, true);
-                }
             } catch (e) {
                 console.error(e);
             }
@@ -100,9 +99,8 @@ export default class CopyTextToClipboard extends React.PureComponent {
         // }
 
         // Bypass onClick if it was present
-        if (elem && elem.props && typeof elem.props.onClick === 'function') {
+        if (elem && elem.props && typeof elem.props.onClick === 'function')
             elem.props.onClick(event);
-        }
     };
 
     render() {

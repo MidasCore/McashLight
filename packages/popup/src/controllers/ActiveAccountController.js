@@ -37,17 +37,16 @@ class ActiveAccountController extends React.Component {
         const paymentAccounts = {};
         if (filterAccounts.length > 0) {
             filterAccounts.forEach(v => {
-                paymentAccounts[v] = { ...accounts[v] };
+                paymentAccounts[ v ] = { ...accounts[ v ] };
             });
         }
         this.setState({
             receiverAddress,
             paymentAccounts
         }, () => {
-            const paymentAddress = Object.keys(paymentAccounts)[0];
-            if (paymentAddress) {
+            const paymentAddress = Object.keys(paymentAccounts)[ 0 ];
+            if (paymentAddress)
                 PopupAPI.selectAccount(paymentAddress);
-            }
         });
     }
 
@@ -65,7 +64,7 @@ class ActiveAccountController extends React.Component {
 
     validateAmount(address) {
         const { selected, accounts } = this.props.accounts;
-        const currentSelected = address && accounts && accounts[address] ? accounts[address] : selected;
+        const currentSelected = address && accounts && accounts[ address ] ? accounts[ address ] : selected;
         let { value } = this.state.amount;
         value = new BigNumber(value || 0);
         if(value.gt(new BigNumber(currentSelected.balance).shiftedBy(-CHAIN_DECIMALS))) {
@@ -124,9 +123,9 @@ class ActiveAccountController extends React.Component {
 
     onCancel = () => {
         const { receiverAddress } = this.state;
-        if (receiverAddress) {
+        if (receiverAddress)
             PopupAPI.selectAccount(receiverAddress);
-        }
+
         PopupAPI.changeState(APP_STATE.READY);
     };
 
@@ -135,7 +134,7 @@ class ActiveAccountController extends React.Component {
         const { selected } = this.props.accounts;
 
         return (
-            <div className='insetContainer send' onClick={() => {this.setState({isOpen:{account:false,token: false}})}}>
+            <div className='insetContainer send' onClick={() => { this.setState({ isOpen: { account: false, token: false } }); }}>
                 <div className='pageHeader'>
                     <div className='back' onClick={this.onCancel} />
                     <FormattedMessage id='ACCOUNT.ACTIVE.TITLE'/>
@@ -144,13 +143,13 @@ class ActiveAccountController extends React.Component {
                     <div className='input-group'>
                         <label><FormattedMessage id='ACCOUNT.SEND.PAY_ACCOUNT'/></label>
                         <div
-                            className={ `input dropDown${isOpen.account?' isOpen':''}`}
-                            onClick={(e)=>{e.stopPropagation();isOpen.token=false;isOpen.account = !isOpen.account; this.setState({isOpen})} }
+                            className={ `input dropDown${isOpen.account ? ' isOpen' : ''}`}
+                            onClick={(e) => { e.stopPropagation();isOpen.token = false;isOpen.account = !isOpen.account; this.setState({ isOpen }); } }
                         >
                             <div className='selected'>{ selected.address }</div>
                             <div
                                 className='dropWrap'
-                                style={isOpen.account?(Object.entries(paymentAccounts).length<=5?{height:48*Object.entries(paymentAccounts).length}:{height:180,overflow:'scroll'}):{}}
+                                style={isOpen.account ? (Object.entries(paymentAccounts).length <= 5 ? { height: 48 * Object.entries(paymentAccounts).length } : { height: 180, overflow: 'scroll' }) : {}}
                             >
                                 {
                                     Object.entries(paymentAccounts).map(([address]) => (
@@ -162,7 +161,7 @@ class ActiveAccountController extends React.Component {
                                             }}
                                         >
                                             <div className={'name'}>
-                                                <small>{paymentAccounts[address] ? paymentAccounts[address].name : 'Wallet'}:</small>
+                                                <small>{paymentAccounts[ address ] ? paymentAccounts[ address ].name : 'Wallet'}:</small>
                                             </div>
                                             {address}
                                         </div>

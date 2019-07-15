@@ -76,15 +76,15 @@ const pageHook = {
         // logger.info('McashLight: New address configured');
 
         this.proxiedMethods.setAddress(address);
-        mcashWeb.ready = true;
+        window.mcashWeb.ready = true;
     },
 
     setNode(node) {
         // logger.info('McashLight: New node configured');
 
-        mcashWeb.fullNode.configure(node.fullNode);
-        mcashWeb.solidityNode.configure(node.solidityNode);
-        mcashWeb.eventServer.configure(node.eventServer);
+        window.mcashWeb.fullNode.configure(node.fullNode);
+        window.mcashWeb.solidityNode.configure(node.solidityNode);
+        window.mcashWeb.eventServer.configure(node.eventServer);
     },
 
     sign(transaction, privateKey = false, useTronHeader = true, callback = false) {
@@ -107,7 +107,7 @@ const pageHook = {
         if(!transaction)
             return callback('Invalid transaction provided');
 
-        if(!mcashWeb.ready)
+        if(!window.mcashWeb.ready)
             return callback('User has not unlocked wallet');
 
         this.request('sign', {

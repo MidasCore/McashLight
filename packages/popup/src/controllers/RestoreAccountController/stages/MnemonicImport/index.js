@@ -54,9 +54,8 @@ class MnemonicImport extends React.Component {
     async changeStage(newStage) {
         if(newStage === IMPORT_STAGE.SELECTING_ACCOUNTS) {
             const res = await this.generateAccounts();
-            if(!res) {
+            if(!res)
                 return false;
-            }
         }
         this.setState({
             subStage: newStage
@@ -89,8 +88,8 @@ class MnemonicImport extends React.Component {
             );
             if(!(account.address in this.props.accounts)) {
                 // let { balance, frozen_for_bandwidth, frozen_for_energy, stake } = await NodeService.mcashWeb.mcash.getUnconfirmedAccount(account.address);
-                let { balance, frozen_for_bandwidth, frozen_for_energy, stake, witness_stake } = await PopupAPI.getAccountInfo(account.address);
-                balance = balance ? balance : 0;
+                const result = await PopupAPI.getAccountInfo(account.address);
+                const { balance = 0, frozen_for_bandwidth, frozen_for_energy, stake, witness_stake } = result;
                 const frozenBalanceForBandwidth = frozen_for_bandwidth && frozen_for_bandwidth.frozen_balance ? frozen_for_bandwidth.frozen_balance : 0;
                 const frozenBalanceForEnergy = frozen_for_energy && frozen_for_energy.frozen_balance ? frozen_for_energy.frozen_balance : 0;
                 const frozenBalance = new BigNumber(frozenBalanceForBandwidth).plus(new BigNumber(frozenBalanceForEnergy));
@@ -105,15 +104,14 @@ class MnemonicImport extends React.Component {
             this.setState({
                 isLoading: false
             });
-            T.notify(formatMessage({id:'CHOOSING_TYPE.MNEMONIC.NO_OPTIONS'}))
+            T.notify(formatMessage({ id: 'CHOOSING_TYPE.MNEMONIC.NO_OPTIONS' }));
             return false;
-        }else {
-            this.setState({
-                addresses,
-                isLoading: false
-            });
-            return true;
         }
+        this.setState({
+            addresses,
+            isLoading: false
+        });
+        return true;
     }
 
     toggleAddress(index) {
@@ -166,15 +164,15 @@ class MnemonicImport extends React.Component {
         return (
             <div className='insetContainer mnemonicImport'>
                 <div className='pageHeader'>
-                    <div className="back" onClick={ () => this.changeStage(IMPORT_STAGE.ENTERING_MNEMONIC) }></div>
-                    <FormattedMessage id="CREATION.RESTORE.MNEMONIC.RELATED_TO.ACCOUNT.TITLE" />
+                    <div className='back' onClick={ () => this.changeStage(IMPORT_STAGE.ENTERING_MNEMONIC) }></div>
+                    <FormattedMessage id='CREATION.RESTORE.MNEMONIC.RELATED_TO.ACCOUNT.TITLE' />
                 </div>
                 <div className='greyModal'>
                     <div className='modalDesc'>
                         <FormattedMessage id='MNEMONIC_IMPORT.SELECTION' />
                     </div>
                     <div className='addressList'>
-                        { addresses.map(({ address,balance }, index) => {
+                        { addresses.map(({ address, balance }, index) => {
                             const isSelected = selected.includes(index);
                             // const icon = isSelected ? 'dot-circle' : 'circle';
                             const className = `addressOption ${ isSelected ? 'isSelected' : '' } ${ isLoading ? 'isLoading' : '' }`;
@@ -187,9 +185,9 @@ class MnemonicImport extends React.Component {
                                     onClick={ () => !isLoading && this.toggleAddress(index) }
                                 >
                                     <div className={ `checkbox ${ isSelected ? 'isSelected' : '' }` }>&nbsp;</div>
-                                    <span className="address">
-                                        <span>{ `${address.substr(0,10)}...${address.substr(-10)}` }</span>
-                                        <span><FormattedMessage id="COMMON.BALANCE" /> <FormattedMessage id="ACCOUNT.BALANCE" values={{amount:balance/100000000}} /></span>
+                                    <span className='address'>
+                                        <span>{ `${address.substr(0, 10)}...${address.substr(-10)}` }</span>
+                                        <span><FormattedMessage id='COMMON.BALANCE' /> <FormattedMessage id='ACCOUNT.BALANCE' values={{ amount: balance / 100000000 }} /></span>
                                     </span>
                                 </div>
                             );
@@ -224,17 +222,17 @@ class MnemonicImport extends React.Component {
         const selectedItem = coinTypes.find(item => item.value === selectedCoinType);
 
         return (
-            <div className='insetContainer mnemonicImport' onClick={() => { this.setState({isOpen: false}) }}>
+            <div className='insetContainer mnemonicImport' onClick={() => { this.setState({ isOpen: false }); }}>
                 <div className='pageHeader'>
-                    <div className="back" onClick={ onCancel }></div>
-                    <FormattedMessage id="CREATION.RESTORE.MNEMONIC.TITLE" />
+                    <div className='back' onClick={ onCancel }></div>
+                    <FormattedMessage id='CREATION.RESTORE.MNEMONIC.TITLE' />
                 </div>
-                <div className={'greyModal'+(!isValid && error?' error':'')}>
+                <div className={`greyModal${!isValid && error ? ' error' : ''}`}>
                     <Toast />
                     <div className='modalDesc'>
                         <FormattedMessage id='MNEMONIC_IMPORT.DESC' />
                     </div>
-                    <div className="inputUnit" style={{ marginBottom: '10px' }}>
+                    <div className='inputUnit' style={{ marginBottom: '10px' }}>
                         <textarea
                             placeholder='Mnemonic Import'
                             className='phraseInput'
@@ -244,26 +242,27 @@ class MnemonicImport extends React.Component {
                             tabIndex={ 1 }
                             disabled={ isLoading }
                         />
-                        {!isValid?<div className="tipError">{error?<FormattedMessage id={error} />:null}</div>:null}
+                        {!isValid ? <div className='tipError'>{error ? <FormattedMessage id={error} /> : null}</div> : null}
                     </div>
-                    <div className="input-group" style={{ marginBottom: '20px' }}>
+                    <div className='input-group' style={{ marginBottom: '20px' }}>
                         <label>{ 'Select HD derivation path:' }</label>
                         <div
-                            className={ 'input dropDown' + (isOpen ? ' isOpen' : '')}
+                            className={ `input dropDown${ isOpen ? ' isOpen' : ''}`}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 this.setState(prevState => ({ isOpen: !prevState.isOpen }));
                             }}
                         >
-                            <div className="selected" style={{ justifyContent: 'flex-start' }}>
+                            <div className='selected' style={{ justifyContent: 'flex-start' }}>
                                 <b>{ selectedItem.path }</b>&nbsp;<span>{ selectedItem.name || '2048' }</span>
                             </div>
-                            <div className="dropWrap" style={isOpen ? { height: 36 * coinTypes.length } : {}}>
+                            <div className='dropWrap' style={isOpen ? { height: 36 * coinTypes.length } : {}}>
                                 {
-                                    coinTypes.map(item => (
+                                    coinTypes.map((item, index) => (
                                         <div
-                                            onClick={(e) => { this.changeCoinType(e, item.value) }}
-                                            className={ 'dropItem' + (selectedCoinType === item.value ? ' selected' : '') }
+                                            key={index}
+                                            onClick={(e) => { this.changeCoinType(e, item.value); }}
+                                            className={ `dropItem${ selectedCoinType === item.value ? ' selected' : ''}` }
                                             style={{ justifyContent: 'flex-start' }}
                                         >
                                             <b>{ item.path }</b>&nbsp;<span>{ item.name }</span>

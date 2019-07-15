@@ -48,8 +48,8 @@ const TransactionMapper = {
             }
             case 'TransferAssetContract': {
                 const tokenID = parameter.value.tokenID ? parameter.value.tokenID : Buffer.from(
-                     parameter.value.asset_name,
-                     'hex'
+                    parameter.value.asset_name,
+                    'hex'
                 ).toString('utf8');
                 if(!StorageService.tokenCache.hasOwnProperty(tokenID))
                     await StorageService.cacheToken(tokenID);

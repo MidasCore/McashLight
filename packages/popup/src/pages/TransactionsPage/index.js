@@ -16,7 +16,7 @@ const TransactionsPage = ({ account }) => {
             <div className='transactions'>
                 <CustomScroll heightRelativeToParent='100%'>
                     {/*{ transactions.map(transaction => (*/}
-                        {/*<Transaction transaction={ transaction } key={ transaction.txID } />*/}
+                    {/*<Transaction transaction={ transaction } key={ transaction.txID } />*/}
                     {/*)) }*/}
                 </CustomScroll>
             </div>

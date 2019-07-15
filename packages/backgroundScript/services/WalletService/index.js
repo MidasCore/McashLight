@@ -111,7 +111,7 @@ class Wallet extends EventEmitter {
             );
 
             accountObj.loadCache();
-            accountObj.update([],[],0);
+            accountObj.update([], [], 0);
 
             this.accounts[ address ] = accountObj;
         });
@@ -145,16 +145,14 @@ class Wallet extends EventEmitter {
             for (const account of accounts) {
                 if (account.address === this.selectedAccount) {
                     Promise.all([account.update(basicPrice, smartPrice)]).then(() => {
-                        if (account.address === this.selectedAccount) {
+                        if (account.address === this.selectedAccount)
                             this.emit('setAccount', this.selectedAccount);
-                        }
                     }).catch(e => {
                         console.log(e);
                     });
-                } else {
+                } else
                     await account.update(basicPrice, smartPrice);
                     //continue;
-                }
             }
             this.emit('setAccounts', this.getAccounts());
         }
@@ -169,12 +167,12 @@ class Wallet extends EventEmitter {
             return;
         const prices = axios('https://api.midasprotocol.com/token/v1/prices/map?fromCodes=MCASH&toCodes=USD%2CBTC%2CETH');
         Promise.all([prices]).then(res => {
-            const resData = res[0].data ? res[0].data.data : {};
+            const resData = res[ 0 ].data ? res[ 0 ].data.data : {};
             const items = resData ? resData.items : {};
             const rates = items && items.MCASH ? items.MCASH.rates : {};
             const ret = {};
             Object.keys(rates).forEach(k => {
-                ret[k.toUpperCase()] = rates[k].rate;
+                ret[ k.toUpperCase() ] = rates[ k ].rate;
             });
             // const ret = Object.fromEntries(
             //     Object.entries(res[0].data["MCASH"]).map(([k, v]) => [k.toUpperCase(), v])
@@ -182,7 +180,6 @@ class Wallet extends EventEmitter {
             StorageService.setPrices(ret);
             this.emit('setPriceList', [ret]);
         }).catch(e => logger.warn('Failed to update prices'));
-
     }
 
     selectCurrency(currency) {
@@ -269,13 +266,11 @@ class Wallet extends EventEmitter {
                 if(r) {
                     res = true;
                     this.emit('setAccount', this.selectedAccount);
-                } else {
+                } else
                     res = false;
-                }
-            }else{
+            }else
                 continue;
                 //await account.update(basicPrice,smartPrice);
-            }
         }
         this.emit('setAccounts', this.getAccounts());
         return res;
@@ -391,11 +386,11 @@ class Wallet extends EventEmitter {
         const setting = this.getSetting();
         setting.lock.lockTime = new Date().getTime();
         this.setSetting(setting);
-        if (this.confirmations.length === 0) {
+        if (this.confirmations.length === 0)
             this._setState(APP_STATE.READY);
-        } else {
+        else
             this._setState(APP_STATE.REQUESTING_CONFIRMATION);
-        }
+
         // const { data: { data : { list: dapps  } } } = await axios.get('https://dappradar.com/api/xchain/dapps/theRest',{ timeout: 5000 }).catch(e=>({ data: { data : { list: []  } } }));
         // const { data: { data : { list: dapps2 } } } = await axios.get('https://dappradar.com/api/xchain/dapps/list/0', { timeout: 5000 }).catch(e=>({ data: { data : { list: []  } } }));
         // const tronDapps =  dapps.concat(dapps2).filter(({ protocols: [ type ] }) => type === 'tron').map(({ logo: icon, url: href, title: name }) => ({ icon, href, name }));
@@ -514,9 +509,9 @@ class Wallet extends EventEmitter {
         });
 
         this.isConfirming = false;
-        if(this.confirmations.length) {
+        if(this.confirmations.length)
             this.emit('setConfirmations', this.confirmations);
-        }
+
         this._closePopup();
         this.resetState();
     }
@@ -551,9 +546,9 @@ class Wallet extends EventEmitter {
         });
 
         this.isConfirming = false;
-        if(this.confirmations.length) {
+        if(this.confirmations.length)
             this.emit('setConfirmations', this.confirmations);
-        }
+
         this._closePopup();
         this.resetState();
     }
@@ -848,7 +843,7 @@ class Wallet extends EventEmitter {
     }
 
     async getBankRecordList({ address, limit, start, type, requestUrl }) {
-        const { data: { data: recordData } } = await axios.get(requestUrl, { params: { receiver_address: address, limit, start, type } })
+        const { data: { data: recordData } } = await axios.get(requestUrl, { params: { receiver_address: address, limit, start, type } });
         if(!recordData)
             return logger.warn('Failed to get bank record data');
         return recordData;
@@ -896,9 +891,9 @@ class Wallet extends EventEmitter {
         const limit = 30;
         let params = { limit, start: limit * start };
         let newRecord = [];
-        if (direction === 'all') {
+        if (direction === 'all')
             params = { ...params, address };
-        } else if (direction === 'to') {
+        else if (direction === 'to') {
             // sender
             params = { ...params, from_address: address };
         } else {
@@ -928,16 +923,15 @@ class Wallet extends EventEmitter {
             // }
             newRecord = records;
             return { records: newRecord, total };
-        } else {
-            params.contract_address = tokenId;
-            const { data } = await axios.get(`${baseApiUrl}/api/token_transfers`, {
-                params
-            }).catch(() => {
-                return { data: { items: [], total: 0 } };
-            });
-            const { items: records = [], total } = data;
-            return { records, total };
         }
+        params.contract_address = tokenId;
+        const { data } = await axios.get(`${baseApiUrl}/api/token_transfers`, {
+            params
+        }).catch(() => {
+            return { data: { items: [], total: 0 } };
+        });
+        const { items: records = [], total } = data;
+        return { records, total };
     }
 
     async getNews() {
@@ -1026,6 +1020,5 @@ class Wallet extends EventEmitter {
     closeActivationPrompt() {
         this.accounts[ this.selectedAccount ].closeActivationPrompt();
     }
-
 }
 export default Wallet;

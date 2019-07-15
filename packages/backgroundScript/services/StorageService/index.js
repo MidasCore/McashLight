@@ -2,7 +2,7 @@ import extensionizer from 'extensionizer';
 import Logger from '@mcashlight/lib/logger';
 import Utils from '@mcashlight/lib/utils';
 import NodeService from '../NodeService';
-import axios from "axios";
+// import axios from 'axios';
 const logger = new Logger('StorageService');
 
 const StorageService = {
@@ -45,7 +45,7 @@ const StorageService = {
             lockTime: 0,
             duration: 0
         },
-        openAccountsMenu:false,
+        openAccountsMenu: false,
         advertising: {},
         developmentMode: location.hostname !== 'ibnejdfjmmkpcnlpebklmnkoeoihofec'
     },
@@ -227,23 +227,23 @@ const StorageService = {
         this.save('selectedToken');
     },
 
-    setLanguage(language){
+    setLanguage(language) {
         logger.info('Saving language', language);
         this.language = language;
         this.save('language');
     },
 
-    setSetting(setting){
+    setSetting(setting) {
         logger.info('Saving setting', setting);
         this.setting = setting;
         this.save('setting');
     },
 
-    getSetting(){
-        if(!this.setting.hasOwnProperty('advertising')){
+    getSetting() {
+        if(!this.setting.hasOwnProperty('advertising'))
             this.setting.advertising = {};
-        }
-        return {...this.setting,developmentMode:location.hostname !== 'ibnejdfjmmkpcnlpebklmnkoeoihofec'};
+
+        return { ...this.setting, developmentMode: location.hostname !== 'ibnejdfjmmkpcnlpebklmnkoeoihofec' };
     },
 
     migrate() {
@@ -359,7 +359,6 @@ const StorageService = {
     },
 
     async cacheToken(tokenID) {
-
         // if(NodeService.getNodes().selected === 'f0b1e38e-7bee-485e-9d3f-69410bf30681') {
         //     if(typeof tokenID === 'string' ){
         //         if(tokenID === 0){

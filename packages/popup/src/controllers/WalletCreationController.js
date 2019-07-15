@@ -15,7 +15,7 @@ const WalletCreationController = () => (
             <img src={logo} />
         </div>
         <div className='greyModal'>
-            <div className="walletOptions">
+            <div className='walletOptions'>
                 <WalletOption tabIndex={ 1 } name='CREATION.CREATE' onClick={ onCreationSelect } />
                 <WalletOption tabIndex={ 2 } name='CREATION.RESTORE' onClick={ onRestoreSelect } />
             </div>

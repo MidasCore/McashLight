@@ -29,7 +29,7 @@ class AccountName extends React.Component {
     onChange(name) {
         const { accounts } = this.props;
         const trimmed = name.replace(/\s{2,}/g, ' ');
-        const showCriteria = trimmed.length===0?false:true;
+        const showCriteria = trimmed.length === 0 ? false : true;
         const state = {
             name: '',
             isValid: VALIDATION_STATE.NONE,
@@ -78,18 +78,18 @@ class AccountName extends React.Component {
 
         return (
             <div className='insetContainer logoWrap'>
-                <div className="back" onClick={ onCancel }></div>
+                <div className='back' onClick={ onCancel }></div>
                 <div className='pageHeader'>
-                    <div className="pageHeaderLogoWrap hasBottomMargin">
-                        <div className="logo1"></div>
-                        <div className="logo2"></div>
+                    <div className='pageHeaderLogoWrap hasBottomMargin'>
+                        <div className='logo1'></div>
+                        <div className='logo2'></div>
                     </div>
                 </div>
                 <div className='greyModal registrationModel'>
                     <div className='inputGroup hasBottomMargin'>
                         <Input
                             autoFocus
-                            className="accountName"
+                            className='accountName'
                             placeholder='INPUT.ACCOUNT_NAME'
                             status={ isValid }
                             value={ name }
@@ -98,7 +98,7 @@ class AccountName extends React.Component {
                             tabIndex={ 1 }
                         />
                         {
-                            showCriteria?
+                            showCriteria ?
                                 <div className='criteria'>
                                     <InputCriteria id='CREATION_CRITERIA.HAS_LENGTH' isValid={ hasLength } />
                                     <InputCriteria id='CREATION_CRITERIA.IS_ALPHANUMERIC' isValid={ isAlphanumeric } />

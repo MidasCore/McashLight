@@ -2,20 +2,19 @@ import crypto from 'crypto';
 import bip39 from 'bip39';
 import bip32 from 'bip32';
 import McashWeb from 'mcashweb';
-import Logger from './logger';
+// import Logger from './logger';
 
-const logger = new Logger('utils');
+// const logger = new Logger('utils');
 
 const Utils = {
     encryptionAlgorithm: 'aes-256-ctr',
     hashAlgorithm: 'sha256',
 
     stringToByte(str) {
-        var bytes = new Array();
-        var len, c;
-        len = str.length;
-        for(var i = 0; i < len; i++) {
-            c = str.charCodeAt(i);
+        const bytes = [];
+        const len = str.length;
+        for(let i = 0; i < len; i++) {
+            const c = str.charCodeAt(i);
             if(c >= 0x010000 && c <= 0x10FFFF) {
                 bytes.push(((c >> 18) & 0x07) | 0xF0);
                 bytes.push(((c >> 12) & 0x3F) | 0x80);
@@ -28,33 +27,31 @@ const Utils = {
             } else if(c >= 0x000080 && c <= 0x0007FF) {
                 bytes.push(((c >> 6) & 0x1F) | 0xC0);
                 bytes.push((c & 0x3F) | 0x80);
-            } else {
+            } else
                 bytes.push(c & 0xFF);
-            }
         }
         return bytes;
     },
 
     byteToString(arr) {
-        if(typeof arr === 'string') {
+        if(typeof arr === 'string')
             return arr;
-        }
-        var str = '',
-            _arr = arr;
-        for(var i = 0; i < _arr.length; i++) {
-            var one = _arr[i].toString(2),
-                v = one.match(/^1+?(?=0)/);
+
+        let str = '';
+        const _arr = arr;
+        for(let i = 0; i < _arr.length; i++) {
+            const one = _arr[ i ].toString(2);
+            const v = one.match(/^1+?(?=0)/);
             if(v && one.length == 8) {
-                var bytesLength = v[0].length;
-                var store = _arr[i].toString(2).slice(7 - bytesLength);
-                for(var st = 1; st < bytesLength; st++) {
-                    store += _arr[st + i].toString(2).slice(2);
-                }
+                const bytesLength = v[ 0 ].length;
+                let store = _arr[ i ].toString(2).slice(7 - bytesLength);
+                for(let st = 1; st < bytesLength; st++)
+                    store += _arr[ st + i ].toString(2).slice(2);
+
                 str += String.fromCharCode(parseInt(store, 2));
                 i += bytesLength - 1;
-            } else {
-                str += String.fromCharCode(_arr[i]);
-            }
+            } else
+                str += String.fromCharCode(_arr[ i ]);
         }
         return str;
     },
@@ -161,20 +158,19 @@ const Utils = {
 
     dataLetterSort (data, field, field2) {
         let needArray = [];
-        let list = {};
-        let LetterArray = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','0','1','2','3','4','5','6','7','8','9'];
+        const list = {};
+        const LetterArray = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
         for (let i = 0; i < data.length; i++) {
-            const d = data[i][field] || data[i][field2] || data[i]['name'];
-            let letter =  d.split('').filter(v=> v.match(/[a-zA-Z0-9]/)).join('').substr(0, 1).toUpperCase();
-            if(!list[letter]) {
-                list[letter] = [];
-            }
-            list[letter].push(data[i]);
+            const d = data[ i ][ field ] || data[ i ][ field2 ] || data[ i ].name;
+            const letter = d.split('').filter(v => v.match(/[a-zA-Z0-9]/)).join('').substr(0, 1).toUpperCase();
+            if(!list[ letter ])
+                list[ letter ] = [];
+
+            list[ letter ].push(data[ i ]);
         }
         LetterArray.forEach( v => {
-            if(list[v]) {
-                needArray = needArray.concat(list[v])
-            }
+            if(list[ v ])
+                needArray = needArray.concat(list[ v ]);
         });
         return needArray;
     },
