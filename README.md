@@ -1,9 +1,9 @@
 <h1 align="center">
   <img width=20% src="https://raw.githubusercontent.com/MidasCore/McashLight/master/packages/popup/static/logo.png">
+  <br>
+  McashLight
+  <br>
 </h1>
-
-
-
 
 <p align="center">
  
@@ -27,10 +27,7 @@
   <a href="https://github.com/MidasCore/McashLight/graphs/contributors"> 
     <img src="https://img.shields.io/github/contributors/MidasCore/McashLight.svg">
   </a>
- 
- 
 </p>
-# McashLight
 
 McashLight is a browser wallet for MCASH. It enables you to send and receive MCASH, M1, M20 and M721 tokens. Developers can integrate McashLight into their website to create Decentralised Apps.
 
