@@ -1,0 +1,17 @@
+@import '../../../../assets/styles/theme.scss';
+
+.privateKeyImport {
+    .privateKeyInput {
+        background: $bg-input;
+        padding: 14px;
+        font-size: 15px;
+        line-height: 20px;
+        border-radius: 2px;
+        user-select: all;
+        word-break: break-word;
+        border: none;
+        width: 100%;
+        box-sizing: border-box;
+        resize: none;
+    }
+}

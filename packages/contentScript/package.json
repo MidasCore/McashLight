@@ -1,0 +1,17 @@
+{
+  "name": "@mcashlight/contentScript",
+  "main": "index.js",
+  "repository": "https://github.com/MidasCore/McashLight",
+  "description": "An interactive browser extension for signing, receiving and broadcasting MCASH transactions",
+  "author": "Kondax <kondaxsolutions@gmail.com>, Nakamoto Ngo <nngo@mcash.network>, Hoang Do <hdo@mcash.network>",
+  "private": true,
+  "version": "2.8.4",
+  "scripts": {
+    "build": "webpack --config ../../webpack.config.js --progress --colors -o ../../dist/contentScript.js",
+    "lint": "npx eslint . --fix"
+  },
+  "dependencies": {
+    "extensionizer": "^1.0.1",
+    "mcashweb": "^2.5.7-beta17"
+  }
+}

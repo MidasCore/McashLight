@@ -1,0 +1,11 @@
+.greyModal .walletOption {
+    background: #FFFFFF;
+    border-radius: 12px 0 0 12px;
+    padding: 15px;
+    transition: all 200ms ease;
+    cursor: pointer;
+    position: relative;
+    &:hover {
+        box-shadow: 0 1px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+}

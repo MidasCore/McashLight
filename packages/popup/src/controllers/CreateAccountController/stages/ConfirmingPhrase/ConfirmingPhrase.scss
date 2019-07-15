@@ -1,0 +1,58 @@
+@import '../../../../assets/styles/theme.scss';
+
+.confirmingPhrase {
+    .wordList {
+        margin: 14px 0;
+        background: $bg-input;
+        border-radius: 2px;
+        padding: 15px;
+        text-align: center;
+        font-size: 17px;
+        line-height: 25px;
+        user-select: none;
+        justify-content: flex-start;
+        height: 170px;
+        .word {
+            float: left;
+            width: 30%;
+            height: 29px;
+            background-color: #fff;
+            padding: 2px 0;
+            margin: 0 5% 8px 0;
+            &:nth-child(3n) {
+                margin-right: 0;
+            }
+            &:nth-child(10), &:nth-child(11), &:nth-child(12) {
+                margin-bottom: 0;
+            }
+        }
+    }
+    .options {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: flex-start;
+        margin-bottom: 14px;
+        .word {
+            margin:4px 10px  4px 0;
+            padding: 4px 6px;
+            font-size: 14px;
+            color: $label-color;
+            border-radius: 2px;
+            transition: all 150ms ease;
+            border: 1px solid $border-color;
+            cursor: pointer;
+            &:not(.correct) {}
+            &:not(.correct):hover,&.correct{
+                background: $color-light;
+                color: #fff;
+                border-color:$color-light;
+            }
+
+            &:not(.correct):active {
+                background: #C2C2D5;
+            }
+        }
+    }
+}

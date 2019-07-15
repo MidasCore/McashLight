@@ -1,0 +1,22 @@
+{
+  "name": "@mcashlight/lib",
+  "main": "index.js",
+  "repository": "https://github.com//McashLight",
+  "description": "An interactive browser extension for signing, receiving and broadcasting MCASH transactions",
+  "author": "Kondax <kondaxsolutions@gmail.com>, Nakamoto Ngo <nngo@mcash.network>, Hoang Do <hdo@mcash.network>",
+  "private": true,
+  "version": "2.8.4",
+  "dependencies": {
+    "bip32": "^1.0.2",
+    "bip39": "^2.5.0",
+    "crypto": "^1.0.1",
+    "dateformat": "^3.0.3",
+    "eventemitter3": "^3.1.0",
+    "extensionizer": "^1.0.1",
+    "mcashweb": "^2.5.7-beta17",
+    "uuid": "^3.3.2"
+  },
+  "scripts": {
+    "lint": "npx eslint . --fix"
+  }
+}

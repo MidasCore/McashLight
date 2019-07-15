@@ -1,0 +1,24 @@
+@import '../../assets/styles/theme.scss';
+
+.processBar{
+  width: 100%;
+  height: 12px;
+  padding:1px 1px 1px 0;
+  border:1px solid rgba(0,169,169,.5);
+  border-radius:6px;
+  display: flex;
+  flex-direction: row;
+
+  .bar{
+    height: 8px;
+    width: 2px;
+    border-radius: 1px;
+    margin-left: 1px;
+    &.grey{
+      background-color: #F3F2F0;
+    }
+    &.green{
+      background-color: $color-light;
+    }
+  }
+}
