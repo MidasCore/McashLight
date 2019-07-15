@@ -9,11 +9,7 @@
  
     
   <a href="https://travis-ci.org/MidasCore/McashLight">
-    <img src="https://travis-ci.org/MidasCore/McashLight.svg?branch=develop">
-  </a>
-  
-  <a href="https://codecov.io/gh/MidasCore/McashLight">
-    <img src="https://codecov.io/gh/MidasCore/McashLight/branch/develop/graph/badge.svg" />
+    <img src="https://travis-ci.org/MidasCore/McashLight.svg">
   </a>
   
   <a href="https://github.com/MidasCore/McashLight/issues">
