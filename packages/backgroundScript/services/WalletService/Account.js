@@ -465,9 +465,9 @@ class Account {
                 amount
             );
 
-            await NodeService.mcashWeb.mcash.sendRawTransaction(
+            return await NodeService.mcashWeb.mcash.sendRawTransaction(
                 await this.sign(transaction)
-            ).then(() => true).catch(err => Promise.reject(
+            ).then(res => res).catch(() => Promise.reject(
                 'Failed to broadcast transaction'
             ));
         } catch(ex) {
@@ -488,9 +488,9 @@ class Account {
                 tokenId
             );
 
-            await NodeService.mcashWeb.mcash.sendRawTransaction(
+            return await NodeService.mcashWeb.mcash.sendRawTransaction(
                 await this.sign(transaction)
-            ).then(() => true).catch(err => Promise.reject(
+            ).then(res => res).catch(() => Promise.reject(
                 'Failed to broadcast transaction'
             ));
         } catch(ex) {
@@ -504,11 +504,17 @@ class Account {
             const contract = await NodeService.mcashWeb.contract().at(token);
 
             // todo: check feeLimit
-            await contract.transfer(recipient, amount).send(
+            const result = await contract.transfer(recipient, amount).send(
                 { feeLimit: 10 * Math.pow(10, 8) },
                 this.privateKey
             );
-            return true;
+            if (typeof result === 'string' && /[a-fA-F0-9{64}]$/.test(result)) {
+                return {
+                    result: true,
+                    transaction: { tx_id: result }
+                };
+            }
+            return result;
         } catch(ex) {
             logger.error('Failed to send smart token:', ex);
             return Promise.reject(ex);
@@ -520,7 +526,7 @@ class Account {
             const account = await NodeService.mcashWeb.transactionBuilder.createAccount(accountAddress);
             await NodeService.mcashWeb.mcash.sendRawTransaction(
                 await this.sign(account)
-            ).then(() => true).catch(err => Promise.reject(
+            ).then(() => true).catch(() => Promise.reject(
                 'Failed to activated account'
             ));
         } catch(ex) {

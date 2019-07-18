@@ -180,12 +180,13 @@
   "CONTRACTS.WithdrawBalanceContract": "バランスを引き出す",
   "CONTRACTS.StakeContract": "ステーク",
   "CONTRACTS.UnstakeContract": "アンステーク",
+  "CONTRACTS.UnfreezeAssetContract": "unfreeze asset",
 
   "SETTINGS.PRICES": "通貨を設定する",
   "SETTINGS.NODES": "Node selection",
   "SETTINGS.NODES.FULL_NODE": "Full node",
   "SETTINGS.NODES.SOLIDITY_NODE": "Solidity node",
-  "SETTINGS.NODES.SCAN": "McashScan",
+  "SETTINGS.NODES.SCAN": "Mcashscan",
   "SETTINGS.NODES.EVENT_SERVER": "Event server",
   "SETTINGS.CUSTOM_NODE": "Add custom node",
   "SETTINGS.CUSTOM_NODE.NAME": "Node name",
@@ -196,7 +197,7 @@
   "SETTINGS.CUSTOM_NODE.SOLIDITY_NODE.PLACEHOLDER": "https://api.mcashscan.io",
   "SETTINGS.CUSTOM_NODE.EVENT_SERVER": "Event server",
   "SETTINGS.CUSTOM_NODE.EVENT_SERVER.PLACEHOLDER": "https://api.mcashscan.io",
-  "SETTINGS.CUSTOM_NODE.SCAN": "McashScan API (optional)",
+  "SETTINGS.CUSTOM_NODE.SCAN": "Mcashscan API (optional)",
   "SETTINGS.CUSTOM_NODE.SCAN.PLACEHOLDER": "https://api.mcashscan.io",
 
   "SETTING.TITLE":"設定する",

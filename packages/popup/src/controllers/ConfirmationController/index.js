@@ -4,6 +4,7 @@ import Toast from 'react-toast-mobile';
 import Button from '@mcashlight/popup/src/components/Button';
 import McashWeb from 'mcashweb';
 import Dropdown from 'react-dropdown';
+import { BigNumber } from 'bignumber.js';
 
 import { PopupAPI } from '@mcashlight/lib/api';
 import { connect } from 'react-redux';
@@ -20,6 +21,11 @@ import {
 
 import 'react-dropdown/style.css';
 import './ConfirmationController.scss';
+import { CHAIN_DECIMALS } from '../../config/constants';
+
+const fromAmount = (amount, decimals = CHAIN_DECIMALS) => {
+    return amount ? new BigNumber(amount).div(Math.pow(10, decimals)).toNumber() : 0;
+};
 
 class ConfirmationController extends React.Component {
     constructor({ intl }) {
@@ -136,16 +142,18 @@ class ConfirmationController extends React.Component {
         );
     }
 
+    numberFormat = (num) => {
+        const { formatNumber } = this.props.intl;
+        return formatNumber(num, { maximumFractionDigits: CHAIN_DECIMALS });
+    };
+
     renderTransaction() {
         const {
             options,
             selected
         } = this.state.whitelisting;
 
-        const {
-            formatMessage,
-            formatNumber
-        } = this.props.intl;
+        const { formatMessage } = this.props.intl;
 
         const {
             hostname,
@@ -159,18 +167,18 @@ class ConfirmationController extends React.Component {
         let showParameters = false;
 
         if(input.call_value)
-            meta.push({ key: 'CONFIRMATIONS.COST', value: formatNumber(input.call_value / 100000000) });
+            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.call_value)) });
 
         if(input.amount && (contractType === 'TransferContract' || contractType === 'ParticipateAssetIssueContract'))
-            meta.push({ key: 'CONFIRMATIONS.COST', value: formatNumber(input.amount / 100000000) });
+            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.amount)) });
         else if(input.amount)
-            meta.push({ key: 'CONFIRMATIONS.COST', value: formatNumber(input.amount) });
+            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(input.amount) });
 
         if(input.frozen_balance)
-            meta.push({ key: 'CONFIRMATIONS.COST', value: formatNumber(input.frozen_balance / 100000000) });
+            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.frozen_balance)) });
 
         if(input.stake_amount)
-            meta.push({ key: 'CONFIRMATIONS.COST', value: formatNumber(input.stake_amount / 100000000) });
+            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.stake_amount)) });
 
         if(input.asset_name)
             meta.push({ key: 'CONFIRMATIONS.TOKEN', value: McashWeb.toUtf8(input.asset_name) });
@@ -181,7 +189,7 @@ class ConfirmationController extends React.Component {
         if(input.to_address) {
             const address = McashWeb.address.fromHex(input.to_address);
             const trimmed = [
-                address.substr(0, 16),
+                address.substr(0, 10),
                 address.substr(28)
             ].join('...');
 
@@ -195,10 +203,10 @@ class ConfirmationController extends React.Component {
             meta.push({ key: 'CONFIRMATIONS.FUNCTION', value: input.function_selector });
 
         if(input.mcash_num)
-            meta.push({ key: 'CONFIRMATIONS.TRX_RATIO', value: formatNumber(input.mcash_num) });
+            meta.push({ key: 'CONFIRMATIONS.TRX_RATIO', value: this.numberFormat(input.mcash_num) });
 
         if(input.num)
-            meta.push({ key: 'CONFIRMATIONS.TOKEN_RATIO', value: formatNumber(input.num) });
+            meta.push({ key: 'CONFIRMATIONS.TOKEN_RATIO', value: this.numberFormat(input.num) });
 
         if(input.account_name)
             meta.push({ key: 'CONFIRMATIONS.ACCOUNT_NAME', value: input.account_name });
@@ -207,7 +215,7 @@ class ConfirmationController extends React.Component {
             meta.push({ key: 'CONFIRMATIONS.PROPOSAL_ID', value: input.proposal_id });
 
         if(input.quant)
-            meta.push({ key: 'CONFIRMATIONS.QUANTITY', value: formatNumber(input.quant) });
+            meta.push({ key: 'CONFIRMATIONS.QUANTITY', value: this.numberFormat(input.quant) });
 
         // This should be translated
         if('is_add_approval' in input)

@@ -743,29 +743,32 @@ class Wallet extends EventEmitter {
     }
 
     async sendMcash({ recipient, amount }) {
-        await this.accounts[ this.selectedAccount ].sendMcash(
+        const result = await this.accounts[ this.selectedAccount ].sendMcash(
             recipient,
             amount
         );
         this.refresh();
+        return result;
     }
 
     async sendBasicToken({ recipient, amount, token }) {
-        await this.accounts[ this.selectedAccount ].sendBasicToken(
+        const result = await this.accounts[ this.selectedAccount ].sendBasicToken(
             recipient,
             amount,
             token
         );
         this.refresh();
+        return result;
     }
 
     async sendSmartToken({ recipient, amount, token }) {
-        await this.accounts[ this.selectedAccount ].sendSmartToken(
+        const result = await this.accounts[ this.selectedAccount ].sendSmartToken(
             recipient,
             amount,
             token
         );
         this.refresh();
+        return result;
     }
 
     async rentEnergy({ _freezeAmount, _payAmount, _days, _energyAddress }) {

@@ -5,11 +5,10 @@ import { PopupAPI } from '@mcashlight/lib/api';
 import Button from '@mcashlight/popup/src/components/Button';
 import { VALIDATION_STATE, APP_STATE, BUTTON_TYPE } from '@mcashlight/lib/constants';
 import McashWeb from 'mcashweb';
-// import NodeService from '@mcashlight/backgroundScript/services/NodeService';
 import swal from 'sweetalert2';
 import Utils from '@mcashlight/lib/utils';
 // import Logger from '@mcashlight/lib/logger';
-import { CHAIN_DECIMALS, CHAIN_SYMBOL } from '../config/constants';
+import { CHAIN_DECIMALS, CHAIN_SYMBOL, MCASHSCAN_URL } from '../config/constants';
 
 const mcashImg = require('@mcashlight/popup/src/assets/images/new/mcash.png');
 // const logger = new Logger('SendController');
@@ -55,12 +54,16 @@ class SendController extends React.Component {
         const { selected } = nextProps.accounts;
         const { selectedToken } = this.state;
         if(selectedToken.id === 0)
-            selectedToken.amount = selected.balance / Math.pow(10, 8);
-        else {
-            if (!isNaN(selectedToken.id))
-                selectedToken.amount = selected.tokens.basic[ selectedToken.id ].balance / Math.pow(10, selected.tokens.basic[ selectedToken.id ].decimals);
-            else if(typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/))
-                selectedToken.amount = selected.tokens.smart[ selectedToken.id ].balance / Math.pow(10, selected.tokens.smart[ selectedToken.id ].decimals);
+            selectedToken.amount = selected.balance / Math.pow(10, CHAIN_DECIMALS);
+        else if (selected.tokens) {
+            if (!isNaN(selectedToken.id)) {
+                const basicToken = selected.tokens.basic ? selected.tokens.basic[ selectedToken.id ] : null;
+                selectedToken.amount = basicToken ? basicToken.balance / Math.pow(10, basicToken.decimals) : 0;
+            }
+            else if(typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/)) {
+                const smartToken = selected.tokens.smart ? selected.tokens.smart[ selectedToken.id ] : null;
+                selectedToken.amount = smartToken ? smartToken.balance / Math.pow(10, smartToken.decimals) : 0;
+            }
         }
         this.setState({ selectedToken });
     }
@@ -81,8 +84,8 @@ class SendController extends React.Component {
         const selectedToken = {
             id: 0,
             name: 'MCASH',
-            decimals: 8,
-            amount: new BigNumber(accounts[ address ].balance).shiftedBy(-8).toString()
+            decimals: CHAIN_DECIMALS,
+            amount: new BigNumber(accounts[ address ] ? accounts[ address ].balance : 0).shiftedBy(-CHAIN_DECIMALS).toString()
         };
         this.setState({ isOpen, selectedToken }, () => { this.validateAmount(); });
         if(selected.address === address)
@@ -182,7 +185,8 @@ class SendController extends React.Component {
                 }
             });
         }
-        if(!this.state.recipient.isActivated && value.gt(new BigNumber(selected.balance).shiftedBy(-8).minus(0.1))) {
+        const notEnoughActivateFee = (id === 0 ? value : new BigNumber(0)).gt(new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).minus(0.1));
+        if(!this.state.recipient.isActivated && notEnoughActivateFee) {
             return this.setState({
                 amount: {
                     valid: false,
@@ -192,9 +196,9 @@ class SendController extends React.Component {
             });
         }
         if(typeof id === 'string' && id.match(/^M/)) {
-            const valid = this.state.recipient.isActivated ? true : false;
+            const valid = this.state.recipient.isActivated;
             if(valid) {
-                const isEnough = new BigNumber(selected.balance).shiftedBy(-8).gte(new BigNumber(1)) ? true : false;
+                const isEnough = new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).gte(new BigNumber(1));
                 // if(selected.netLimit - selected.netUsed < 200 && selected.energy - selected.energyUsed > 10000){
                 //     return this.setState({
                 //         amount: {
@@ -247,7 +251,7 @@ class SendController extends React.Component {
         if(selected.netLimit - selected.netUsed < 250) {
             return this.setState({
                 amount: {
-                    valid: new BigNumber(selected.balance).shiftedBy(-8).gte(new BigNumber(1)),
+                    valid: new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).gte(new BigNumber(1)),
                     value: value.toString(),
                     error: 'EXCEPTION.SEND.BANDWIDTH_NOT_ENOUGH_ERROR'
                 }
@@ -347,7 +351,7 @@ class SendController extends React.Component {
         if(id === 0) {
             func = PopupAPI.sendMcash(
                 recipient,
-                new BigNumber(amount).shiftedBy(8).toString()
+                new BigNumber(amount).shiftedBy(CHAIN_DECIMALS).toString()
             );
         } else if(typeof id === 'string' && id.match(/^M/)) {
             func = PopupAPI.sendSmartToken(
@@ -367,13 +371,26 @@ class SendController extends React.Component {
             );
         }
 
-        func.then(() => {
-            swal(formatMessage({ id: 'SEND.SUCCESS' }), '', 'success');
+        func.then(res => {
+            const txId = res && res.transaction ? res.transaction.tx_id : '';
+            const swalOptions = {
+                type: 'success',
+                title: formatMessage({ id: 'SEND.SUCCESS' }),
+                text: ''
+            };
+            if (txId)
+                swalOptions.footer = `<a href="${MCASHSCAN_URL}/transaction/${txId}" rel='noopener noreferrer' target='_blank'><small>View on Mcashscan</small></a>`;
+            swal(swalOptions);
             this.setState({
                 loading: false
+            }, () => {
+                setTimeout(() => {
+                    this.validateAmount();
+                }, 1000);
             });
         }).catch(error => {
-            swal(JSON.stringify(error), '', 'error');
+            const errorMessage = typeof error === 'string' ? Utils.prettyErrorMessage(error) : JSON.stringify(error);
+            swal(errorMessage, '', 'error');
             this.setState({
                 loading: false
             });
@@ -419,10 +436,10 @@ class SendController extends React.Component {
     render() {
         const { isOpen, selectedToken, loading, amount, recipient, showConfirm } = this.state;
         const { selected, accounts } = this.props.accounts;
-        const trx = { tokenId: 0, name: 'Mcash', balance: selected.balance, abbr: 'MCASH', decimals: 8, imgUrl: mcashImg };
+        const mcash = { tokenId: 0, name: 'Mcash', balance: selected.balance, abbr: 'MCASH', decimals: CHAIN_DECIMALS, imgUrl: mcashImg };
         let tokens = { ...selected.tokens.basic, ...selected.tokens.smart };
         tokens = Utils.dataLetterSort(Object.entries(tokens).filter(([tokenId, token]) => typeof token === 'object' ).map(v => { v[ 1 ].tokenId = v[ 0 ];return v[ 1 ]; }), 'name');
-        tokens = [trx, ...tokens];
+        tokens = [mcash, ...tokens];
         return (
             <div className='insetContainer send' onClick={() => { this.setState({ isOpen: { account: false, token: false } }); }}>
                 {showConfirm ? this.renderConfirmSend() : null}
@@ -438,7 +455,16 @@ class SendController extends React.Component {
                             <div className='dropWrap' style={isOpen.account ? (Object.entries(accounts).length <= 5 ? { height: 48 * Object.entries(accounts).length } : { height: 180, overflow: 'scroll' }) : {}}>
                                 {
                                     Object.entries(accounts).map(([address], index) => (
-                                        <div key={`payment-${index}`} onClick={(e) => { this.changeAccount(address, e); }} className={`dropItem multiple-line${address === selected.address ? ' selected' : ''}`}><div className={'name'}><small>{accounts[ address ] ? accounts[ address ].name : 'Wallet'}:</small></div>{address}</div>
+                                        <div
+                                            key={`payment-${index}`}
+                                            onClick={(e) => { this.changeAccount(address, e); }}
+                                            className={`dropItem multiple-line${address === selected.address ? ' selected' : ''}`}
+                                        >
+                                            <div className={'name'}>
+                                                <small>{accounts[ address ] ? accounts[ address ].name : 'Wallet'}:</small>
+                                            </div>
+                                            {address}
+                                        </div>
                                     ))
                                 }
                             </div>
@@ -461,7 +487,12 @@ class SendController extends React.Component {
                         <label><FormattedMessage id='ACCOUNT.SEND.CHOOSE_TOKEN'/></label>
                         <div className={`input dropDown${isOpen.token ? ' isOpen' : ''}`} onClick={ (e) => { e.stopPropagation();isOpen.account = false;isOpen.token = !isOpen.token; this.setState({ isOpen }); } }>
                             <div className='selected'>
-                                <span title={`${selectedToken.name} (${selectedToken.amount})`}>{`${selectedToken.name} (${selectedToken.amount})`}</span>{selectedToken.id !== 0 ? (<span>id:{selectedToken.id.length === 7 ? selectedToken.id : `${selectedToken.id.substr(0, 6)}...${selectedToken.id.substr(-6)}`}</span>) : ''}
+                                <span title={`${selectedToken.abbr || selectedToken.name} (${selectedToken.amount})`}>{`${selectedToken.abbr || selectedToken.name} (${selectedToken.amount})`}</span>
+                                {
+                                    selectedToken.id !== 0 ? (
+                                        <span>id:{selectedToken.id.length === 7 ? selectedToken.id : `${selectedToken.id.substr(0, 6)}...${selectedToken.id.substr(-6)}`}</span>
+                                    ) : ''
+                                }
                             </div>
                             <div className='dropWrap' style={isOpen.token ? (tokens.length <= 5 ? { height: 36 * tokens.length } : { height: 180, overflow: 'scroll' }) : {}}>
                                 {
@@ -474,7 +505,18 @@ class SendController extends React.Component {
                                             .shiftedBy(-decimals)
                                             .toString();
                                         return (
-                                            <div key={`token-${index}`} onClick={(e) => { this.changeToken({ id, amount, name, decimals, abbr }, e); }} className={`dropItem${id === selectedToken.id ? ' selected' : ''}`}><span title={`${name}(${amount})`}>{`${name} (${amount})`}</span>{id !== 0 && typeof id === 'string' ? (<span>id:{id.length === 7 ? id : `${id.substr(0, 6)}...${id.substr(-6)}`}</span>) : ''}</div>
+                                            <div
+                                                key={`token-${index}`}
+                                                onClick={(e) => { this.changeToken({ id, amount, name, decimals, abbr }, e); }}
+                                                className={`dropItem${id === selectedToken.id ? ' selected' : ''}`}
+                                            >
+                                                <span title={`${abbr || name}(${amount})`}>{`${abbr || name} (${amount})`}</span>
+                                                {
+                                                    id !== 0 && typeof id === 'string' ? (
+                                                        <span>id:{id.length === 7 ? id : `${id.substr(0, 6)}...${id.substr(-6)}`}</span>
+                                                    ) : ''
+                                                }
+                                            </div>
                                         );
                                     })
                                 }

@@ -219,6 +219,11 @@ const Utils = {
         return `${timeY}/${timeM}/${timeD} ${timeh}:${timem}`;
     },
 
+    prettyErrorMessage(message) {
+        const errorMessageRegex = new RegExp('class [a-zA-Z._$]+ :');
+        return message.replace(errorMessageRegex, '').trim();
+    }
+
 };
 
 export default Utils;
