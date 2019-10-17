@@ -207,7 +207,7 @@ class MnemonicImport extends React.Component {
         );
     }
 
-    renderInput() {
+    renderInput = () => {
         const { onCancel } = this.props;
         const {
             mnemonic,
@@ -218,6 +218,7 @@ class MnemonicImport extends React.Component {
             isOpen,
             selectedCoinType
         } = this.state;
+        const { formatMessage } = this.props.intl;
 
         const selectedItem = coinTypes.find(item => item.value === selectedCoinType);
 
@@ -234,7 +235,7 @@ class MnemonicImport extends React.Component {
                     </div>
                     <div className='inputUnit' style={{ marginBottom: '10px' }}>
                         <textarea
-                            placeholder='Mnemonic Import'
+                            placeholder={formatMessage({ id: 'MNEMONIC_IMPORT.PLACEHOLDER' })}
                             className='phraseInput'
                             rows={ 5 }
                             value={ mnemonic }
@@ -245,7 +246,7 @@ class MnemonicImport extends React.Component {
                         {!isValid ? <div className='tipError'>{error ? <FormattedMessage id={error} /> : null}</div> : null}
                     </div>
                     <div className='input-group' style={{ marginBottom: '20px' }}>
-                        <label>{ 'Select HD derivation path:' }</label>
+                        <label>{ formatMessage({ id: 'MNEMONIC_IMPORT.HD_DERIVATION_PATH' }) }</label>
                         <div
                             className={ `input dropDown${ isOpen ? ' isOpen' : ''}`}
                             onClick={(e) => {

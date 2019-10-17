@@ -6,7 +6,6 @@ import { BigNumber } from 'bignumber.js';
 import { PopupAPI } from '@mcashlight/lib/api';
 import Utils from '@mcashlight/lib/utils';
 import Header from '@mcashlight/popup/src/controllers/PageController/Header';
-import ProcessBar from '@mcashlight/popup/src/components/ProcessBar';
 import Button from '@mcashlight/popup/src/components/Button';
 import CopyTextToClipboard from '@mcashlight/popup/src/components/CopyTextToClipboard';
 import { connect } from 'react-redux';
@@ -14,12 +13,14 @@ import { APP_STATE, BUTTON_TYPE } from '@mcashlight/lib/constants';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import './AccountsPage.scss';
 import '@mcashlight/popup/src/controllers/PageController/Header/Header.scss';
-import { ACTIVE_ACCOUNT_FEE, BANKER_NODE, CHAIN_DECIMALS } from '../../config/constants';
+import { ACTIVE_ACCOUNT_FEE, CHAIN_DECIMALS } from '../../config/constants';
 import Backup from './Backup';
+import Resource from './Resource';
+import Ieos from './Ieos';
+import Tokens from './Tokens';
 
 const antdAlert = Modal.alert;
 const mcashImg = require('@mcashlight/popup/src/assets/images/new/mcash.png');
-const token10DefaultImg = require('@mcashlight/popup/src/assets/images/new/token_10_default.png');
 let mcashscanUrl = '';
 
 class AccountsPage extends React.Component {
@@ -155,18 +156,21 @@ class AccountsPage extends React.Component {
         });
     }
 
+    openAccountsMenu = async () => {
+        const setting = await PopupAPI.getSetting();
+        if (this.props.setting && !this.props.setting.openAccountsMenu) {
+            const openAccountsMenu = true;
+            PopupAPI.setSetting({ ...setting, openAccountsMenu });
+        }
+    };
+
     renderAccountInfo(accounts, prices, totalMoney, mcashPrice) {
         const { formatMessage } = this.props.intl;
         const { showMenuList } = this.state;
         return (
             <div className='accountInfo'>
                 <div className='row1'>
-                    <div className='accountWrap' onClick={async (e) => {
-                        const setting = await PopupAPI.getSetting();
-                        const openAccountsMenu = true;
-                        PopupAPI.setSetting({ ...setting, openAccountsMenu });
-                    }}
-                    >
+                    <div className='accountWrap' onClick={this.openAccountsMenu}>
                         <span>{accounts.selected.name.length > 30 ? `${accounts.selected.name.substr(0, 30)}...` : accounts.selected.name}</span>
                     </div>
                     <div className='menu' onClick={(e) => { e.stopPropagation();this.setState({ showMenuList: !showMenuList, showNodeList: false }); }}>
@@ -233,156 +237,6 @@ class AccountsPage extends React.Component {
                         <FormattedMessage id='ACCOUNT.SEND' />
                     </div>
                 </div>
-            </div>
-        );
-    }
-
-    renderResource(account) {
-        const { nodes } = this.props;
-        return (
-            account ?
-                <div className='resource'>
-                    <div className='cell'>
-                        <div className='title'>
-                            <FormattedMessage id='CONFIRMATIONS.RESOURCE.BANDWIDTH' />
-                            <div className='num' title={`${account.netLimit - account.netUsed}/${account.netLimit}`}>
-                                {account.netLimit - account.netUsed}<span>/{account.netLimit}</span>
-                            </div>
-                        </div>
-                        <ProcessBar percentage={(account.netLimit - account.netUsed) / account.netLimit} />
-                    </div>
-                    <div className='line'></div>
-                    <div className='cell bankSingle'>
-                        <div className='title'>
-                            {
-                                nodes.selected === BANKER_NODE ?
-                                // nodes.selected === 'f0b1e38e-7bee-485e-9d3f-69410bf306812' ?
-                                    <span className='bankBox' onClick={ () => { PopupAPI.changeState(APP_STATE.TRONBANK); }}>
-                                        <FormattedMessage
-                                            id='CONFIRMATIONS.RESOURCE.ENERGY'
-                                            children={ value => (
-                                                <span className='light-color'>{value}</span>
-                                            ) }
-                                        />
-                                        <img className='bankArrow' src={require('../../assets/images/new/tronBank/rightArrow.svg')} alt='arrow'/>
-                                        <div className='bankPopover'>
-                                            <div className='popoverTitle'><FormattedMessage id='BANK.INDEX.ENTRANCE' /></div>
-                                        </div>
-                                    </span> :
-                                    <FormattedMessage
-                                        id='CONFIRMATIONS.RESOURCE.ENERGY'
-                                        children={ value => (
-                                            <span className='light-color'>{value}</span>
-                                        ) }
-                                    />
-                            }
-                            <div className='num' title={`${account.energy - account.energyUsed}/${account.energy}`}>
-                                {account.energy - account.energyUsed}<span>/{account.energy}</span>
-                            </div>
-                        </div>
-                        <ProcessBar percentage={(account.energy - account.energyUsed) / account.energy} />
-                    </div>
-                </div>
-                :
-                null
-        );
-    }
-
-    renderIeos(ieos) {
-        if(ieos.length === 0)
-            return null;
-        const { language } = this.props;
-        return (
-            <div className='ieos'>
-                {
-                    ieos.map((v, i) => (
-                        <div key={`ieo-${i}`} className='ieo' onClick={() => { window.open(v.ieoUrl); }}>
-                            <img src={v.logoUrl} />
-                            <div className='name'>{v.name}</div>
-                            <div className='worth'>
-                                {
-                                    v.time + 1 > 0 ? (
-                                        <div className='ieo_will'>
-                                            {/*<FormattedMessage id='IEOS.LEFT_TIME' values={{day:v.timer[3]}} />*/}
-                                            {
-                                                language === 'en' ?
-                                                    <span>
-                                                        {v.timer[ 3 ] > 1 ? `${v.timer[ 3 ] } days until the sale` : (v.timer[ 3 ] === 1 ? '1 day until the sale' : 'until the sale')}
-                                                    </span>
-                                                    :
-                                                    <FormattedMessage id='IEOS.LEFT_TIME' values={{ day: (v.timer[ 3 ] > 0 ? (language === 'zh' ? `${v.timer[ 3 ] }天` : `${v.timer[ 3 ]}日`) : '') }} />
-                                            }
-                                            <div className='time'>
-                                                <div className='cell'>{v.timer[ 0 ]}</div>
-                                                :
-                                                <div className='cell'>{v.timer[ 1 ]}</div>
-                                                :
-                                                <div className='cell'>{v.timer[ 2 ]}</div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className='ieo_ing'><FormattedMessage id='IEOS.BUY_ING' /></div>
-                                    )
-                                }
-                                <div className='launch'>
-                                    <FormattedMessage id='IEOS.LAUNCH_BASE' />
-                                </div>
-                            </div>
-                        </div>
-                    ))
-                }
-            </div>
-        );
-    }
-
-    renderTokens(tokens) {
-        const { prices, accounts } = this.props;
-        return (
-            <div className='tokens'>
-                {
-                    tokens.map(({ tokenId, ...token }, index) => {
-                        const amount = new BigNumber(token.balance)
-                            .shiftedBy(-token.decimals)
-                            .toString();
-                        const price = typeof token.price === 'undefined' ? 0 : token.price;
-                        const money = (tokenId === 0) ? (price * amount).toFixed(2) : (price * amount * prices.priceList[ prices.selected ]).toFixed(2);
-                        return (
-                            <div key={`token-${index}`} className='tokenItem' onClick={ () => {
-                                const o = { id: tokenId, name: token.name, abbr: token.abbr || token.symbol, decimals: token.decimals, amount, price: token.price, imgUrl: token.imgUrl ? token.imgUrl : token10DefaultImg };
-                                if(tokenId === 0) {
-                                    o.frozenBalance = new BigNumber(accounts.selected.frozenBalance)
-                                        .shiftedBy(-token.decimals)
-                                        .toString();
-                                    o.balance = new BigNumber(accounts.selected.balance)
-                                        .shiftedBy(-token.decimals)
-                                        .toString();
-                                    o.stakeBalance = new BigNumber(accounts.selected.stakeBalance)
-                                        .shiftedBy(-token.decimals)
-                                        .toString();
-                                }
-                                PopupAPI.setSelectedToken(o);
-                                PopupAPI.changeState(APP_STATE.TRANSACTIONS);
-                            }}
-                            >
-                                <img src={token.imgUrl || token10DefaultImg} onError={(e) => { e.target.src = token10DefaultImg; }} alt=''/>
-                                <div className='name'>
-                                    <span>{token.abbr || token.symbol || token.name}</span>
-                                    {
-                                        token.isShow ?
-                                            <div className='income'>
-                                                <FormattedMessage id='USDT.MAIN.INCOME_YESTERDAY' values={{ earning: (token.income > 0 ? '+' : '') + new BigNumber(token.income).toFixed(2).toString() }} />
-                                            </div>
-                                            : null
-                                    }
-                                </div>
-                                <div className='worth'>
-                                    <span>{amount}</span>
-                                    <span>≈ <span className='light-color'>{price ? money : '--'}</span> {prices.selected}</span>
-                                </div>
-                            </div>
-                        );
-                    })
-                }
             </div>
         );
     }
@@ -481,7 +335,13 @@ class AccountsPage extends React.Component {
                 {
                     this.renderDeleteAccount()
                 }
-                <Header showNodeList={showNodeList} developmentMode={setting.developmentMode} nodes={nodes} handleShowNodeList={this.handleShowNodeList.bind(this)} />
+                <Header
+                    showNodeList={showNodeList}
+                    developmentMode={setting.developmentMode}
+                    nodes={nodes}
+                    handleShowNodeList={this.handleShowNodeList.bind(this)}
+                    openAccountsMenu={this.openAccountsMenu}
+                />
                 <div className='space-controller'>
                     {/*{*/}
                     {/*nodes.selected === BANKER_NODE && id !== 0 && (!setting.advertising[ id ] || (setting.advertising[ id ] && setting.advertising[ id ][ mode ])) ?*/}
@@ -598,10 +458,10 @@ class AccountsPage extends React.Component {
                     </div>
                     { accounts.selected.address ? this.renderAccountInfo(accounts, prices, totalMoney, mcash_price) : null }
                     <div className='listWrap'>
-                        { this.renderResource(accounts.accounts[ accounts.selected.address ]) }
-                        { this.renderIeos(ieos) }
+                        <Resource account={accounts.accounts[ accounts.selected.address ]} />
+                        <Ieos ieos={ieos} />
                         <div className='scroll'>
-                            { this.renderTokens(tokens) }
+                            <Tokens tokens={tokens} />
                         </div>
                     </div>
                 </div>

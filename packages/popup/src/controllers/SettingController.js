@@ -110,11 +110,14 @@ class SettingController extends React.Component {
         }
 
         const { customNode } = this.state;
-        const nameState = (!Object.values(nodes).some(node => (
-            node.name.toLowerCase() === name.trim().toLowerCase()
-        )) && name.trim().length >= 4) ?
-            VALIDATION_STATE.VALID :
-            VALIDATION_STATE.INVALID;
+        // const nameState = (!Object.values(nodes).some(node => (
+        //     node.name.toLowerCase() === name.trim().toLowerCase()
+        // )) && name.trim().length >= 4) ?
+        //     VALIDATION_STATE.VALID :
+        //     VALIDATION_STATE.INVALID;
+        const nameState = name.trim().length <= 4 ? 'EXCEPTION.ADD_NODE.NAME' : (
+            Object.values(nodes).some(node => node.name === name.trim()) ? 'EXCEPTION.ADD_NODE.REPEAT_NAME' : VALIDATION_STATE.VALID
+        );
 
         // const isValid =
         //     nameState === VALIDATION_STATE.VALID &&
@@ -316,7 +319,7 @@ class SettingController extends React.Component {
                                     <FormattedMessage id='SETTING.TITLE.ADD_NODE' />
                                 </div>
                                 <div className='settingWrap' onClick={(e) => { e.stopPropagation(); }}>
-                                    <div className={`input-group${!isValid && name.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>
+                                    <div className={`input-group${!isValid && name.state !== VALIDATION_STATE.VALID && name.state !== VALIDATION_STATE.NONE ? ' error' : ''}`}>
                                         <label>
                                             <FormattedMessage id='SETTINGS.CUSTOM_NODE.NAME' />
                                         </label>
@@ -324,7 +327,7 @@ class SettingController extends React.Component {
                                             <input type='text' value={name.value} placeholder={formatMessage({ id: 'SETTINGS.CUSTOM_NODE.NAME.PLACEHOLDER' })} onChange={ (e) => this.onCustomNameChange(e.target.value) }/>
                                         </div>
                                         {
-                                            !isValid && name.state === VALIDATION_STATE.INVALID ? <div className='tipError'><FormattedMessage id='EXCEPTION.ADD_NODE.NAME' /></div> : null
+                                            !isValid && name.state !== VALIDATION_STATE.VALID && name.state !== VALIDATION_STATE.NONE ? <div className='tipError'><FormattedMessage id={name.state || 'EXCEPTION.ADD_NODE.NAME'} /></div> : null
                                         }
                                     </div>
                                     <div className={`input-group${!isValid && fullNode.state === VALIDATION_STATE.INVALID ? ' error' : ''}`}>

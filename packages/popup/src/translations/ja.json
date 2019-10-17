@@ -82,8 +82,11 @@
 
   "MNEMONIC_IMPORT.DESC": "以下に回復フレーズを入力してください。長さは12、16、または24ワードとします。（スペース区切り）",
   "MNEMONIC_IMPORT.SELECTION": "下からインポートしたいアカウントを選んでください",
+  "MNEMONIC_IMPORT.PLACEHOLDER": "ニーモニックインポート",
+  "MNEMONIC_IMPORT.HD_DERIVATION_PATH": "HD派生パスを選択する",
 
   "PRIVATE_KEY_IMPORT.DESC": "下に秘密のキーを入力してください。秘密のキーは16進数のみとします",
+  "PRIVATE_KEY_IMPORT.PLACEHOLDER": "プライベートキーのインポート",
 
   "ACCOUNT.BALANCE": "{amount, number} MCASH",
   "ACCOUNT.NO_BALANCE": "无余额",
@@ -102,12 +105,12 @@
   "ACCOUNT.SEND.RECEIVE_ADDRESS":"受取アドレス",
   "ACCOUNT.SEND.CHOOSE_TOKEN":"トークンを選ぶ",
   "ACCOUNT.SEND.TRANSFER_AMOUNT":"発送する数量",
-  "ACCOUNT.ACTIVE.TITLE": "Activate Account",
+  "ACCOUNT.ACTIVE.TITLE": "アカウントを有効にする",
   "ACCOUNT.ACTIVE.OK": "OK",
-  "ACCOUNT.ACTIVE.CANCEL": "Cancel",
-  "ACCOUNT.ACTIVE.FEE": "Fee",
-  "ACCOUNT.ACTIVE.BUTTON": "Activate",
-  "ACCOUNT.ACTIVE.SUCCESS": "Successful activation",
+  "ACCOUNT.ACTIVE.CANCEL": "キャンセルする",
+  "ACCOUNT.ACTIVE.FEE": "料金",
+  "ACCOUNT.ACTIVE.BUTTON": "有効化",
+  "ACCOUNT.ACTIVE.SUCCESS": "成功したアクティベーション",
 
 
 
@@ -158,10 +161,10 @@
   "CONTRACTS.AccountCreateContract": "アカウントを作成する",
   "CONTRACTS.TransferContract": "アドレスにTRXを送る",
   "CONTRACTS.TransferAssetContract": "トークンをアドレスに送る",
-  "CONTRACTS.VoteWitnessContract": "上司に投票する",
-  "CONTRACTS.WitnessCreateContract": "スーパー代表を作成するe",
+  "CONTRACTS.VoteWitnessContract": "スーパーノードに投票する",
+  "CONTRACTS.WitnessCreateContract": "スーパーノードを作成する",
   "CONTRACTS.AssetIssueContract": "トークンを作成する",
-  "CONTRACTS.WitnessUpdateContract": "あなたの上司を更新する",
+  "CONTRACTS.WitnessUpdateContract": "スーパーノードを更新する",
   "CONTRACTS.ParticipateAssetIssueContract": "トークンを購入する",
   "CONTRACTS.AccountUpdateContract": "あなたのアカウントを更新する",
   "CONTRACTS.FreezeBalanceContract": "あなたの残高の一部を凍結する",
@@ -180,7 +183,7 @@
   "CONTRACTS.WithdrawBalanceContract": "バランスを引き出す",
   "CONTRACTS.StakeContract": "ステーク",
   "CONTRACTS.UnstakeContract": "アンステーク",
-  "CONTRACTS.UnfreezeAssetContract": "unfreeze asset",
+  "CONTRACTS.UnfreezeAssetContract": "ロック解除されたトークンの凍結解除",
 
   "SETTINGS.PRICES": "通貨を設定する",
   "SETTINGS.NODES": "Node selection",
@@ -227,13 +230,13 @@
 
   "ACCOUNTS.CONFIRM_DELETE": "アカウントを削除する",
   "ACCOUNTS.CONFIRM_DELETE.BODY": "アカウントを削除しますか",
-  "ACCOUNTS.CONFIRM_TRANSACTION": "Confirm transaction",
+  "ACCOUNTS.CONFIRM_TRANSACTION": "取引を確認",
 
-  "ACCOUNTS.EXPORT": "アカウントをエクスポートする",
+  "ACCOUNTS.EXPORT": "セキュリティ",
   "ACCOUNTS.EXPORT.MNEMONIC": "ニーモニック",
   "ACCOUNTS.EXPORT.PRIVATE_KEY": "秘密鍵",
-  "ACCOUNTS.VERIFY.LABEL": "Type your McashLight password",
-  "ACCOUNTS.VERIFY.WARNING": "Warning: Never disclose this key. Anyone with your private keys can steal any assets held in your account.",
+  "ACCOUNTS.VERIFY.LABEL": "McashLightパスワードを入力してください。",
+  "ACCOUNTS.VERIFY.WARNING": "警告：このキーをサブスクライブしないでください。 プライベートキーを持っている人はだれでも、アカウントに保持されている資産を盗むことができます。",
 
   "LOGIN.PASSWORD.BACK":"お帰りなさい",
 
@@ -357,6 +360,7 @@
   "EXCEPTION.FORMAT_ERROR":"フォーマットが正しくありません",
   "EXCEPTION.ACCOUNT_EXIST":"アドレスは既に存在します。 再度追加しないでください。",
   "EXCEPTION.ADD_NODE.NAME":"4文字以上が必要です。",
+  "EXCEPTION.ADD_NODE.REPEAT_NAME": "That name is taken. Try another",
   "EXCEPTION.ADD_NODE.NODE_URL":"フォーマットが正しくありません。http：// または https：// で始めてください。",
   "EXCEPTION.SEND.ADDRESS_FORMAT_ERROR":"アドレスフォーマットが正しくありません",
   "EXCEPTION.SEND.ADDRESS_SAME_ERROR":"支払い先住所と受取人住所を同じにすることはできません。",

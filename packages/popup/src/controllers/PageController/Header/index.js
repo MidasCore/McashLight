@@ -29,12 +29,17 @@ class Header extends React.Component {
         this.setState({ nodeIndex: index, showNodeList: !this.state.showNodeList });
     }
 
+    openMenu = () => {
+        if (this.props.openAccountsMenu)
+            this.props.openAccountsMenu();
+    };
+
     render() {
         const { refresh } = this.state;
         return (
             <div className='header'>
                 <div className='titleContainer'>
-                    <div>
+                    <div style={{ cursor: 'pointer' }} onClick={this.openMenu}>
                         <img src={logo} alt=''/>
                     </div>
                     <div>

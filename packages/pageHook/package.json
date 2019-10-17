@@ -5,12 +5,12 @@
   "description": "An interactive browser extension for signing, receiving and broadcasting MCASH transactions",
   "author": "Kondax <kondaxsolutions@gmail.com>, Nakamoto Ngo <nngo@mcash.network>, Hoang Do <hdo@mcash.network>",
   "private": true,
-  "version": "2.8.5",
+  "version": "2.8.6",
   "scripts": {
     "build": "webpack --config ../../webpack.config.js --progress --colors -o ../../dist/pageHook.js",
     "lint": "npx eslint . --fix"
   },
   "dependencies": {
-    "mcashweb": "^2.7.1"
+    "mcashweb": "^2.7.3-beta2"
   }
 }

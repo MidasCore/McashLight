@@ -205,6 +205,7 @@ const StorageService = {
 
         this.nodes.selectedNode = nodeID;
         this.save('nodes');
+        this.cleanCacheTokens();
     },
 
     saveAccount(account) {
@@ -418,6 +419,11 @@ const StorageService = {
 
         logger.info(`Cached token ${ tokenID }:`, this.tokenCache[ tokenID ]);
 
+        this.save('tokenCache');
+    },
+
+    cleanCacheTokens() {
+        this.tokenCache = {};
         this.save('tokenCache');
     },
 

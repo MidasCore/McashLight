@@ -223,6 +223,23 @@ class Account {
         this.activated = false;
     }
 
+    getTokenIcon(tokenId) {
+        let iconUrl = ''
+        // mainnet
+        if (NodeService.getNodes().selected === '6be34522-8ad5-4631-b785-755ea7d870d8')
+            iconUrl = 'https://raw.githubusercontent.com/MidasCore/mcashchain-assets/master/tokens/mainnet/:tokenId.png';
+        // testnet
+        else if (NodeService.getNodes().selected === '6739be94-ee43-46af-9a62-690cf0947269')
+            iconUrl = 'https://raw.githubusercontent.com/MidasCore/mcashchain-assets/master/tokens/testnet/:tokenId.png';
+        // zeronet
+        else if (NodeService.getCurrentNode()) {
+            const node = NodeService.getCurrentNode();
+            if (node.fullNode === 'https://zeronet.mcash.network')
+                iconUrl = 'https://raw.githubusercontent.com/MidasCore/mcashchain-assets/master/tokens/zeronet/:tokenId.png';
+        }
+        return iconUrl ? iconUrl.replace(':tokenId', tokenId) : '';
+    }
+
     async update(basicTokenPriceList, smartTokenPriceList) {
         const { address } = this;
         logger.info(`Requested update for ${ address }`);
@@ -246,6 +263,7 @@ class Account {
                 return value > 0;
             });
             if (filteredTokens.length > 0) {
+                const objFilteredTokensKey = {}
                 for (const { key, value } of filteredTokens) {
                     let token = this.tokens.basic[ key ] || false;
                     const filter = basicTokenPriceList.filter(({ first_token_id: firstTokenId }) => firstTokenId === key);
@@ -271,7 +289,7 @@ class Account {
                             name,
                             abbr,
                             decimals,
-                            imgUrl
+                            imgUrl: imgUrl || this.getTokenIcon(key)
                         };
                     }
                     this.tokens.basic[ key ] = {
@@ -279,6 +297,18 @@ class Account {
                         balance: value,
                         price
                     };
+                    objFilteredTokensKey[ key ] = true;
+                }
+                // remove token null
+                if (this.tokens.basic) {
+                    Object.keys(this.tokens.basic).forEach(key => {
+                        if (!objFilteredTokensKey[ key ]) {
+                            this.tokens.basic[ key ] = {
+                                ...this.tokens.basic[ key ],
+                                balance: 0
+                            };
+                        }
+                    });
                 }
             } else
                 this.tokens.basic = {};
@@ -304,7 +334,7 @@ class Account {
                         this.tokens.smart[ tokenId ] = token;
 
                     // todo: check logo_url (imgUrl)
-                    this.tokens.smart[ tokenId ].imgUrl = false;
+                    this.tokens.smart[ tokenId ].imgUrl = this.getTokenIcon(tokenId);
                     this.tokens.smart[ tokenId ].balance = balance;
                     this.tokens.smart[ tokenId ].price = 0;
                 } else {
@@ -380,7 +410,9 @@ class Account {
         logger.info(`Requested smart tokens for ${ address }`);
         const currentNode = NodeService.getCurrentNode();
         const baseUrl = currentNode && currentNode.mcashScan ? currentNode.mcashScan : 'https://api.mcashscan.io';
-        const { data } = await axios.get(`${baseUrl}/api/accounts/${address}`).catch(() => ( { data: {} } ));
+        const { data } = await axios.get(`${baseUrl}/api/accounts/${address}`, {
+            timeout: 10000
+        }).catch(() => ( { data: {} } ));
         const result = data ? data : {};
         const tokenBalances = result && Array.isArray(result.token_balances) ? result.token_balances.filter(item => item && !!item.contract_address) : [];
         if (tokenBalances.length > 0) {
@@ -391,7 +423,7 @@ class Account {
                 const contract = await NodeService.mcashWeb.contract().at(tokenId).catch(() => false);
                 if (contract) {
                     const number = await contract.balanceOf(address).call();
-                    const balance = new BigNumber(number.balance ? number.balance : number).toString();
+                    const balance = number && number._hex ? new BigNumber(number._hex, 16).toString() : 0;
                     const d = await contract.decimals().call();
                     const name = await contract.name().call();
                     const symbol = await contract.symbol().call();
@@ -400,7 +432,7 @@ class Account {
                         name,
                         symbol,
                         decimals,
-                        imgUrl: false,
+                        imgUrl: this.getTokenIcon(tokenId),
                         balance,
                         price: 0
                     };
@@ -505,7 +537,7 @@ class Account {
 
             // todo: check feeLimit
             const result = await contract.transfer(recipient, amount).send(
-                { feeLimit: 10 * Math.pow(10, 8) },
+                {},
                 this.privateKey
             );
             if (typeof result === 'string' && /[a-fA-F0-9{64}]$/.test(result)) {

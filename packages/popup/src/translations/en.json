@@ -82,8 +82,11 @@
 
     "MNEMONIC_IMPORT.DESC": "Please enter your mnemonic phrase below. This will either be 12, 16 or 24 words in length (separated by spaces)",
     "MNEMONIC_IMPORT.SELECTION": "Select the accounts you would like to import below",
+    "MNEMONIC_IMPORT.PLACEHOLDER": "Mnemonic Import",
+    "MNEMONIC_IMPORT.HD_DERIVATION_PATH": "Select HD derivation path:",
 
     "PRIVATE_KEY_IMPORT.DESC": "Please enter your private key below. This can only contain hexadecimal characters",
+    "PRIVATE_KEY_IMPORT.PLACEHOLDER": "Private Key Import",
 
     "ACCOUNT.BALANCE": "{amount, number} MCASH",
     "ACCOUNT.NO_BALANCE": "No Balance",
@@ -180,7 +183,7 @@
     "CONTRACTS.WithdrawBalanceContract": "withdraw balance",
     "CONTRACTS.StakeContract": "stake",
     "CONTRACTS.UnstakeContract": "unstake",
-    "CONTRACTS.UnfreezeAssetContract": "unfreeze asset",
+    "CONTRACTS.UnfreezeAssetContract": "unfreeze unlocked token",
 
     "SETTINGS.PRICES": "Currency selection",
     "SETTINGS.NODES": "Node selection",
@@ -357,6 +360,7 @@
     "EXCEPTION.FORMAT_ERROR":"Incorrect format",
     "EXCEPTION.ACCOUNT_EXIST":"The address already exists. Please do not add again.",
     "EXCEPTION.ADD_NODE.NAME":"More than 4 characters are required.",
+    "EXCEPTION.ADD_NODE.REPEAT_NAME": "That name is taken. Try another",
     "EXCEPTION.ADD_NODE.NODE_URL":"Incorrect format. Please start with http:// or https://",
     "EXCEPTION.SEND.ADDRESS_FORMAT_ERROR":"Incorrect address format",
     "EXCEPTION.SEND.ADDRESS_SAME_ERROR":"Payment address cannot be the same as recipient address.",

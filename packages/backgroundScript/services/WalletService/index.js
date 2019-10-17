@@ -908,7 +908,8 @@ class Wallet extends EventEmitter {
             if (type)
                 params.type = type;
             const { data } = await axios.get(`${baseApiUrl}/api/transactions`, {
-                params
+                params,
+                timeout: 10000
             }).catch(() => {
                 return { data: { items: [], total: 0 } };
             });
@@ -929,7 +930,8 @@ class Wallet extends EventEmitter {
         }
         params.contract_address = tokenId;
         const { data } = await axios.get(`${baseApiUrl}/api/token_transfers`, {
-            params
+            params,
+            timeout: 10000
         }).catch(() => {
             return { data: { items: [], total: 0 } };
         });

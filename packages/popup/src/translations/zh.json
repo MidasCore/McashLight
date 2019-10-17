@@ -82,8 +82,11 @@
 
     "MNEMONIC_IMPORT.DESC": "请在下方输入你的助记词.长度为12，16，或者24个词（需用空格隔开）",
     "MNEMONIC_IMPORT.SELECTION": "选择下面你想导入的账户",
+    "MNEMONIC_IMPORT.PLACEHOLDER": "助记符进口",
+    "MNEMONIC_IMPORT.HD_DERIVATION_PATH": "选择HD导出路径：",
 
     "PRIVATE_KEY_IMPORT.DESC": "请在下方输入你的私钥，只能包含16进制字符",
+    "PRIVATE_KEY_IMPORT.PLACEHOLDER": "私人密钥导入",
 
     "ACCOUNT.BALANCE": "{amount, number} MCASH",
     "ACCOUNT.NO_BALANCE": "无余额",
@@ -102,12 +105,12 @@
     "ACCOUNT.SEND.RECEIVE_ADDRESS":"接收地址",
     "ACCOUNT.SEND.CHOOSE_TOKEN":"选择Token",
     "ACCOUNT.SEND.TRANSFER_AMOUNT":"发送数量",
-    "ACCOUNT.ACTIVE.TITLE": "Activate Account",
-    "ACCOUNT.ACTIVE.OK": "OK",
-    "ACCOUNT.ACTIVE.CANCEL": "Cancel",
-    "ACCOUNT.ACTIVE.FEE": "Fee",
-    "ACCOUNT.ACTIVE.BUTTON": "Activate",
-    "ACCOUNT.ACTIVE.SUCCESS": "Successful activation",
+    "ACCOUNT.ACTIVE.TITLE": "激活账户",
+    "ACCOUNT.ACTIVE.OK": "好的",
+    "ACCOUNT.ACTIVE.CANCEL": "取消",
+    "ACCOUNT.ACTIVE.FEE": "费用",
+    "ACCOUNT.ACTIVE.BUTTON": "启用",
+    "ACCOUNT.ACTIVE.SUCCESS": "成功激活",
 
 
 
@@ -158,10 +161,10 @@
     "CONTRACTS.AccountCreateContract": "创建账户",
     "CONTRACTS.TransferContract": "转trx到一个地址",
     "CONTRACTS.TransferAssetContract": "转token到一个地址",
-    "CONTRACTS.VoteWitnessContract": "为超级代表投票",
-    "CONTRACTS.WitnessCreateContract": "创建一个超级代表",
+    "CONTRACTS.VoteWitnessContract": "投票支持超级节点",
+    "CONTRACTS.WitnessCreateContract": "创建一个超级节点",
     "CONTRACTS.AssetIssueContract": "创建一个token",
-    "CONTRACTS.WitnessUpdateContract": "更新超级代表信息",
+    "CONTRACTS.WitnessUpdateContract": "更新你的超级节点",
     "CONTRACTS.ParticipateAssetIssueContract": "参与通证发型",
     "CONTRACTS.AccountUpdateContract": "更新你的账户",
     "CONTRACTS.FreezeBalanceContract": "冻结余额",
@@ -180,7 +183,7 @@
     "CONTRACTS.WithdrawBalanceContract": "撤回平衡",
     "CONTRACTS.StakeContract": "赌注",
     "CONTRACTS.UnstakeContract": "退出赌注",
-    "CONTRACTS.UnfreezeAssetContract": "unfreeze asset",
+    "CONTRACTS.UnfreezeAssetContract": "解冻解锁令牌",
 
     "SETTINGS.PRICES": "设置货币",
     "SETTINGS.NODES": "Node selection",
@@ -227,13 +230,13 @@
 
     "ACCOUNTS.CONFIRM_DELETE": "删除账户",
     "ACCOUNTS.CONFIRM_DELETE.BODY": "您确定要删除当前账号么？",
-    "ACCOUNTS.CONFIRM_TRANSACTION": "Confirm transaction",
+    "ACCOUNTS.CONFIRM_TRANSACTION": "确认交易",
 
-    "ACCOUNTS.EXPORT": "导出账户",
+    "ACCOUNTS.EXPORT": "安全",
     "ACCOUNTS.EXPORT.MNEMONIC": "助记词",
     "ACCOUNTS.EXPORT.PRIVATE_KEY": "私钥",
-    "ACCOUNTS.VERIFY.LABEL": "Type your McashLight password",
-    "ACCOUNTS.VERIFY.WARNING": "Warning: Never disclose this key. Anyone with your private keys can steal any assets held in your account.",
+    "ACCOUNTS.VERIFY.LABEL": "输入您的密码McashLight",
+    "ACCOUNTS.VERIFY.WARNING": "警告：千万不要透露该密钥。任何人只要有你的私钥可以窃取您的帐户中持有的任何资产。",
 
     "LOGIN.PASSWORD.BACK":"欢迎回来",
 
@@ -350,7 +353,6 @@
 
 
 
-
     "IEOS.BUY_ING":"抢购中",
     "IEOS.LEFT_TIME":"距开抢{day}",
     "IEOS.LAUNCH_BASE":"LaunchBase",
@@ -358,6 +360,7 @@
     "EXCEPTION.FORMAT_ERROR":"格式错误",
     "EXCEPTION.ACCOUNT_EXIST":"该地址已在账户列表中，请勿重复添加",
     "EXCEPTION.ADD_NODE.NAME":"需大于四个字符",
+    "EXCEPTION.ADD_NODE.REPEAT_NAME": "That name is taken. Try another",
     "EXCEPTION.ADD_NODE.NODE_URL":"格式错误，请以http://或https://开头",
     "EXCEPTION.SEND.ADDRESS_FORMAT_ERROR":"地址格式错误",
     "EXCEPTION.SEND.ADDRESS_SAME_ERROR":"支付地址与接收地址不能相同",

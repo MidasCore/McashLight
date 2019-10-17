@@ -3,7 +3,7 @@ import Button from '@mcashlight/popup/src/components/Button';
 import McashWeb from 'mcashweb';
 
 import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import { PopupAPI } from '@mcashlight/lib/api';
 
 import './PrivateKeyImport.scss';
@@ -60,6 +60,7 @@ class PrivateKeyImport extends React.Component {
 
     render() {
         const { onCancel } = this.props;
+        const { formatMessage } = this.props.intl;
 
         const {
             privateKey,
@@ -79,7 +80,7 @@ class PrivateKeyImport extends React.Component {
                     </div>
                     <div className='inputUnit'>
                         <textarea
-                            placeholder='Private Key Import'
+                            placeholder={formatMessage({ id: 'PRIVATE_KEY_IMPORT.PLACEHOLDER' })}
                             className='privateKeyInput'
                             rows={ 5 }
                             value={ privateKey }
@@ -103,6 +104,6 @@ class PrivateKeyImport extends React.Component {
     }
 }
 
-export default connect(state => ({
+export default injectIntl(connect(state => ({
     accounts: state.accounts.accounts
-}))(PrivateKeyImport);
+}))(PrivateKeyImport));

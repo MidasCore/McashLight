@@ -7,6 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import { PopupAPI } from '@mcashlight/lib/api';
 import { APP_STATE } from '@mcashlight/lib/constants';
 import CopyTextToClipboard from '@mcashlight/popup/src/components/CopyTextToClipboard';
+import { MCASHSCAN_URL } from '../../config/constants';
 
 BigNumber.config({ EXPONENTIAL_AT: [-20, 30] });
 const token10DefaultImg = require('@mcashlight/popup/src/assets/images/new/token_10_default.png');
@@ -32,8 +33,10 @@ class TransactionsController extends React.Component {
         } = this.props;
         const { id = 0 } = accounts.selectedToken;
         Toast.loading('', 0);
-        const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id });
-        Toast.hide();
+        const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id })
+            .finally(() => {
+                Toast.hide();
+            });
         this.setState({ transactions });
     }
 
@@ -56,7 +59,7 @@ class TransactionsController extends React.Component {
                         id !== 0 ?
                             <span className='detail' onClick={() => {
                                 let url = 'https://mcashscan.io/#/';
-                                url += (typeof id == 'string' && id.match(/^M/) ? `token20/${id}` : `token/${id}`);
+                                url += (typeof id === 'string' && id.match(/^M/) ? `token20/${id}` : `token/${id}`);
                                 window.open(url);
                             }}
                             >
@@ -68,7 +71,7 @@ class TransactionsController extends React.Component {
                 </div>
                 <div className='greyModal'>
                     <div className='showTokenInfo' style={ isTop ? { height: 0, paddingTop: 0, overflow: 'hidden' } : { overflow: 'hidden', height: (id === 0 ? 216 : 176) }}>
-                        <img src={imgUrl} onError={(e) => { e.target.src = token10DefaultImg; }} />
+                        <img src={imgUrl || token10DefaultImg} onError={(e) => { e.target.src = token10DefaultImg; }} />
                         <div className='amount'>
                             {amount}
                         </div>
@@ -195,16 +198,15 @@ class TransactionsController extends React.Component {
                                             let callValue = 0;
                                             let direction;
                                             let addr;
-                                            const mcashscanUrl = 'https://mcashscan.io/#';
                                             let hash;
                                             if(typeof v.asset_id !== 'undefined') {
                                                 callValue = v.amount;
-                                                direction = v.to_address && v.owner_address ? (v.to_address === v.owner_address ? 'send' : (v.to_address === address ? 'receive' : 'send')) : '';
+                                                direction = v.to_address && v.owner_address ? (v.to_address === v.owner_address ? '' : (v.to_address === address ? 'receive' : 'send')) : '';
                                                 // addr = v.toAddress; //trigger => ownerAddress show toAddress
                                                 addr = v.to_address === address ? v.owner_address : v.to_address; //trigger => ownerAddress show toAddress
                                                 hash = v.hash;
                                             }else{
-                                                direction = v.to_address && v.from_address ? (v.to_address === v.from_address ? 'send' : (v.to_address === address ? 'receive' : 'send')) : '';
+                                                direction = v.to_address && v.from_address ? (v.to_address === v.from_address ? '' : (v.to_address === address ? 'receive' : 'send')) : '';
                                                 addr = v.to_address === address ? v.from_address : v.to_address;
                                                 callValue = v.amount;
                                                 hash = v.transaction_hash;
@@ -212,11 +214,11 @@ class TransactionsController extends React.Component {
                                             if (!addr)
                                                 addr = '';
 
-                                            const shortAddr = addr ? `${addr.substr(0, 4)}...${addr.substr(-12)}` : (v.contract_type ? v.contract_type : '');
+                                            const shortAddr = addr ? `${addr.substr(0, 4)}...${addr.substr(-12)}` : (v.contract_type || '');
                                             return (
                                                 <div
                                                     className={`item ${direction}`} key={transIndex}
-                                                    onClick={(e) => { e.stopPropagation();window.open(`${mcashscanUrl}/transaction/${hash}`); }}
+                                                    onClick={(e) => { e.stopPropagation();window.open(`${MCASHSCAN_URL}/transaction/${hash}`); }}
                                                 >
                                                     <div className='left'>
                                                         <div className='address'>{shortAddr}</div>

@@ -4,7 +4,7 @@
   "repository": "https://github.com/MidasCore/McashLight",
   "description": "An interactive browser extension for signing, receiving and broadcasting MCASH transactions",
   "author": "Kondax <kondaxsolutions@gmail.com>, Nakamoto Ngo <nngo@mcash.network>, Hoang Do <hdo@mcash.network>",
-  "version": "2.8.5",
+  "version": "2.8.6",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.8",
@@ -16,7 +16,7 @@
     "bignumber.js": "^8.0.1",
     "copy-to-clipboard": "^3.0.8",
     "es6-promise": "^4.2.6",
-    "mcashweb": "^2.7.1",
+    "mcashweb": "^2.7.3-beta2",
     "moment": "2.22.1",
     "node-sass": "^4.10.0",
     "qrcode-react": "^0.1.16",
