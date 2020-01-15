@@ -32,7 +32,7 @@
         "semi": [ "error", "always" ],
         "no-console": "off",
         "object-curly-spacing": [ "error", "always" ],
-        "computed-property-spacing": [ "error", "always" ],
+        "computed-property-spacing": "off",
         "key-spacing": [ "error", { "beforeColon": false, "afterColon": true } ],
         "prefer-const": [ "error" ],
         "no-empty": [ "error", { "allowEmptyCatch": true } ],

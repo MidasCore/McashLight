@@ -1,9 +1,12 @@
 import React from 'react';
+import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { BigNumber } from 'bignumber.js';
 import { PopupAPI } from '@mcashlight/lib/api';
+import _ from 'lodash';
 import Button from '@mcashlight/popup/src/components/Button';
 import { VALIDATION_STATE, APP_STATE, BUTTON_TYPE } from '@mcashlight/lib/constants';
+import { resetInputDefault } from '@mcashlight/popup/src/reducers/sendingReducer';
 import McashWeb from 'mcashweb';
 import swal from 'sweetalert2';
 import Utils from '@mcashlight/lib/utils';
@@ -40,7 +43,12 @@ class SendController extends React.Component {
                 values: ''
             },
             loading: false,
-            showConfirm: false
+            showConfirm: false,
+            memo: {
+                error: '',
+                value: '',
+                valid: true
+            }
         };
     }
 
@@ -48,31 +56,85 @@ class SendController extends React.Component {
         const { selectedToken, selected } = this.props.accounts;
         selectedToken.amount = selectedToken.id === 0 ? selected.balance / Math.pow(10, 8) : selectedToken.amount;
         this.setState({ selectedToken });
+        if (this.props.inputDefault) {
+            const { recipient, amount } = this.props.inputDefault;
+            if (recipient && typeof recipient === 'string')
+                this.onRecipientChange(recipient);
+            if (amount && !isNaN(amount))
+                this.onAmountChange(amount);
+            this.props.resetInputDefault();
+        }
     }
 
-    componentWillReceiveProps(nextProps) {
-        const { selected } = nextProps.accounts;
-        const { selectedToken } = this.state;
-        if(selectedToken.id === 0)
-            selectedToken.amount = selected.balance / Math.pow(10, CHAIN_DECIMALS);
-        else if (selected.tokens) {
-            if (!isNaN(selectedToken.id)) {
-                const basicToken = selected.tokens.basic ? selected.tokens.basic[ selectedToken.id ] : null;
-                selectedToken.amount = basicToken ? basicToken.balance / Math.pow(10, basicToken.decimals) : 0;
+    // componentWillReceiveProps(nextProps) {
+    //     const { selected } = nextProps.accounts;
+    //     const { selectedToken } = this.state;
+    //     if(selectedToken.id === 0)
+    //         selectedToken.amount = selected.balance / Math.pow(10, CHAIN_DECIMALS);
+    //     else if (selected.tokens) {
+    //         if (!isNaN(selectedToken.id)) {
+    //             const basicToken = selected.tokens.basic ? selected.tokens.basic[ selectedToken.id ] : null;
+    //             selectedToken.amount = basicToken ? basicToken.balance / Math.pow(10, basicToken.decimals) : 0;
+    //         } else if (typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/)) {
+    //             const smartToken = selected.tokens.smart ? selected.tokens.smart[ selectedToken.id ] : null;
+    //             selectedToken.amount = smartToken ? smartToken.balance / Math.pow(10, smartToken.decimals) : 0;
+    //         }
+    //     }
+    //     this.setState({ selectedToken });
+    // }
+
+    // static getDerivedStateFromProps(nextProps, prevState) {
+    //     const { selected } = nextProps.accounts;
+    //     const { selectedToken } = prevState;
+    //     if (selectedToken.id === 0)
+    //         selectedToken.amount = selected.balance / Math.pow(10, CHAIN_DECIMALS);
+    //     else if (selected.tokens) {
+    //         if (!isNaN(selectedToken.id)) {
+    //             const basicToken = selected.tokens.basic ? selected.tokens.basic[ selectedToken.id ] : null;
+    //             selectedToken.amount = basicToken ? basicToken.balance / Math.pow(10, basicToken.decimals) : 0;
+    //         } else if (typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/)) {
+    //             const smartToken = selected.tokens.smart ? selected.tokens.smart[ selectedToken.id ] : null;
+    //             selectedToken.amount = smartToken ? smartToken.balance / Math.pow(10, smartToken.decimals) : 0;
+    //         }
+    //     }
+    //     return { selectedToken };
+    // }
+
+    componentDidUpdate(prevProps) {
+        const { selected } = prevProps.accounts;
+        if (selected !== this.props.accounts.selected) {
+            const { selectedToken } = this.state;
+            if (selectedToken.id === 0)
+                selectedToken.amount = selected.balance / Math.pow(10, CHAIN_DECIMALS);
+            else if (selected.tokens) {
+                if (!isNaN(selectedToken.id)) {
+                    const basicToken = selected.tokens.basic ? selected.tokens.basic[ selectedToken.id ] : null;
+                    selectedToken.amount = basicToken ? basicToken.balance / Math.pow(10, basicToken.decimals) : 0;
+                } else if (typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/)) {
+                    const smartToken = selected.tokens.smart ? selected.tokens.smart[ selectedToken.id ] : null;
+                    selectedToken.amount = smartToken ? smartToken.balance / Math.pow(10, smartToken.decimals) : 0;
+                }
             }
-            else if(typeof selectedToken.id === 'string' && selectedToken.id.match(/^M/)) {
-                const smartToken = selected.tokens.smart ? selected.tokens.smart[ selectedToken.id ] : null;
-                selectedToken.amount = smartToken ? smartToken.balance / Math.pow(10, smartToken.decimals) : 0;
-            }
+            this.setState({ selectedToken });
         }
-        this.setState({ selectedToken });
     }
 
     changeToken(selectedToken, e) {
         e.stopPropagation();
         const { isOpen } = this.state;
         isOpen.token = !isOpen.token;
-        this.setState({ isOpen, selectedToken }, () => this.validateAmount());
+        this.setState({ isOpen, selectedToken }, () => {
+            this.validateAmount();
+            if (!this.supportedMemo()) {
+                this.setState({
+                    memo: {
+                        error: '',
+                        value: '',
+                        valid: true
+                    }
+                });
+            }
+        });
         PopupAPI.setSelectedToken(selectedToken);
     }
 
@@ -93,9 +155,8 @@ class SendController extends React.Component {
         PopupAPI.selectAccount(address);
     }
 
-    async onRecipientChange(e) {
+    onRecipientChange = async (address) => {
         const { selected } = this.props.accounts;
-        const address = e.target.value;
 
         const recipient = {
             value: address,
@@ -124,13 +185,10 @@ class SendController extends React.Component {
                 recipient.error = '';
             }
         }
-        this.setState({
-            recipient
-        });
-    }
+        this.setState({ recipient });
+    };
 
-    onAmountChange(e) {
-        const amount = e.target.value;
+    onAmountChange = (amount) => {
         this.setState({
             amount: {
                 value: amount,
@@ -139,65 +197,61 @@ class SendController extends React.Component {
         }, () => {
             this.validateAmount();
         });
-    }
+    };
 
-    validateAmount() {
-        const {
-            amount,
-            decimals,
-            id
-        } = this.state.selectedToken;
+    validateAmount = _.debounce(() => {
+        const { amount: tokenAmount, decimals, id } = this.state.selectedToken;
         const { selected } = this.props.accounts;
-        let { value } = this.state.amount;
-        if(value === '') {
+        const { amount } = this.state;
+        if (amount.value === '') {
             return this.setState({
                 amount: {
                     valid: false,
-                    value,
+                    value: '',
                     error: ''
                 }
             });
         }
-        value = new BigNumber(value || 0);
-        if(value.isNaN() || value.lte(0)) {
+        const value = new BigNumber(amount.value || 0);
+        if (value.isNaN() || value.lte(0)) {
             return this.setState({
                 amount: {
+                    ...amount,
                     valid: false,
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.AMOUNT_FORMAT_ERROR'
                 }
             });
-        }else if(value.gt(amount)) {
+        } else if (value.gt(tokenAmount)) {
             return this.setState({
                 amount: {
+                    ...amount,
                     valid: false,
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.AMOUNT_NOT_ENOUGH_ERROR'
                 }
             });
-        }else if(value.dp() > decimals) {
+        } else if (value.dp() > decimals) {
             return this.setState({
                 amount: {
+                    ...amount,
                     valid: false,
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.AMOUNT_DECIMALS_ERROR',
                     values: { decimals: `${decimals === 0 ? '' : `0.${Array.from({ length: decimals - 1 }, v => 0).join('')}` }1` }
                 }
             });
         }
         const notEnoughActivateFee = (id === 0 ? value : new BigNumber(0)).gt(new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).minus(0.1));
-        if(!this.state.recipient.isActivated && notEnoughActivateFee) {
+        if (!this.state.recipient.isActivated && notEnoughActivateFee) {
             return this.setState({
                 amount: {
+                    ...amount,
                     valid: false,
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.AMOUNT_NOT_ENOUGH_ERROR'
                 }
             });
         }
-        if(typeof id === 'string' && id.match(/^M/)) {
+        if (typeof id === 'string' && id.match(/^M/)) {
             const valid = this.state.recipient.isActivated;
-            if(valid) {
+            if (valid) {
                 const isEnough = new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).gte(new BigNumber(1));
                 // if(selected.netLimit - selected.netUsed < 200 && selected.energy - selected.energyUsed > 10000){
                 //     return this.setState({
@@ -223,36 +277,36 @@ class SendController extends React.Component {
                 //             error: 'EXCEPTION.SEND.BANDWIDTH_ENERGY_NOT_ENOUGH_ERROR'
                 //         }
                 //     });
-                if(selected.netLimit - selected.netUsed < 250) {
+                if (selected.netLimit - selected.netUsed < 250) {
                     return this.setState({
                         amount: {
+                            ...amount,
                             valid: isEnough,
-                            value: value.toString(),
                             error: 'EXCEPTION.SEND.BANDWIDTH_NOT_ENOUGH_ERROR'
                         }
                     });
                 }
                 return this.setState({
                     amount: {
+                        ...amount,
                         valid: true,
-                        value: value.toString(),
                         error: ''
                     }
                 });
             }
             return this.setState({
                 amount: {
+                    ...amount,
                     valid,
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.ADDRESS_UNACTIVATED_TRC20_ERROR'
                 }
             });
         }
-        if(selected.netLimit - selected.netUsed < 250) {
+        if (selected.netLimit - selected.netUsed < 250) {
             return this.setState({
                 amount: {
+                    ...amount,
                     valid: new BigNumber(selected.balance).shiftedBy(-CHAIN_DECIMALS).gte(new BigNumber(1)),
-                    value: value.toString(),
                     error: 'EXCEPTION.SEND.BANDWIDTH_NOT_ENOUGH_ERROR'
                 }
             });
@@ -260,12 +314,39 @@ class SendController extends React.Component {
 
         return this.setState({
             amount: {
+                ...amount,
                 valid: true,
-                value: value.toString(),
                 error: ''
             }
         });
-    }
+    }, 200);
+
+    clickMaxAmount = () => {
+        const { selectedToken } = this.state;
+        this.setState({
+            amount: {
+                value: selectedToken.amount || 0,
+                valid: false,
+                error: ''
+            }
+        }, () => {
+            this.validateAmount();
+        });
+    };
+
+    onMemoChange = (e) => {
+        const value = e.target.value;
+        const memo = {
+            value,
+            valid: true,
+            error: ''
+        };
+        if (value && Utils.byteLength(value.trim()) > 128) {
+            memo.valid = false;
+            memo.error = 'EXCEPTION.SEND.MEMO_LENGTH_ERROR';
+        }
+        this.setState({ memo });
+    };
 
     onConfirmSend() {
         this.setState({
@@ -276,9 +357,10 @@ class SendController extends React.Component {
     renderConfirmSend() {
         const { value: recipient } = this.state.recipient;
         const { value: amount } = this.state.amount;
+        const { value: memo } = this.state.memo;
         const { selectedToken } = this.state;
         const { selected: sender } = this.props.accounts;
-        const symbol = selectedToken.abbr ? selectedToken.abbr : selectedToken.name;
+        const symbol = selectedToken.abbr || selectedToken.name;
         const receiverAddress = recipient && recipient.length > 10 ? `${recipient.substr(0, 6) }...${ recipient.substr(-4)}` : recipient;
         const senderAddress = sender && sender.address && sender.address.length > 10 ? `${sender.address.substr(0, 6) }...${ sender.address.substr(-4)}` : sender.address;
         return (
@@ -289,30 +371,28 @@ class SendController extends React.Component {
                     </div>
                     <div className='popUp__grid'>
                         <div className='popUp__row'>
-                            <div>
-                                <FormattedMessage id='ACCOUNT.SEND.PAY_ACCOUNT' />
-                            </div>
+                            <div><FormattedMessage id='ACCOUNT.SEND.PAY_ACCOUNT' /></div>
                             <div>
                                 <div><b>{senderAddress}</b></div>
-                                <small>{selectedToken.amount ? new BigNumber(selectedToken.amount).toFormat() : '--'}&nbsp;{selectedToken.abbr ? selectedToken.abbr : selectedToken.name}</small>
+                                <small>{selectedToken.amount ? new BigNumber(selectedToken.amount).toFormat() : '--'}&nbsp;{symbol}</small>
                             </div>
                         </div>
                         <div className='popUp__row'>
-                            <div>
-                                <FormattedMessage id='ACCOUNT.SEND.RECEIVE_ADDRESS' />
-                            </div>
-                            <div>
-                                <b>{receiverAddress}</b>
-                            </div>
+                            <div><FormattedMessage id='ACCOUNT.SEND.RECEIVE_ADDRESS' /></div>
+                            <div><b>{receiverAddress}</b></div>
                         </div>
                         <div className='popUp__row'>
-                            <div>
-                                <FormattedMessage id='ACCOUNT.SEND.TRANSFER_AMOUNT' />
-                            </div>
-                            <div>
-                                <b>{`${new BigNumber(amount).toFormat()} ${symbol}`}</b>
-                            </div>
+                            <div><FormattedMessage id='ACCOUNT.SEND.TRANSFER_AMOUNT' /></div>
+                            <div><b>{`${new BigNumber(amount).toFormat()} ${symbol}`}</b></div>
                         </div>
+                        {
+                            memo ? (
+                                <div className='popUp__row'>
+                                    <div><FormattedMessage id='ACCOUNT.SEND.MEMO' /></div>
+                                    <div><b>{memo.length > 12 ? `${memo.substr(0, 12)}...` : memo}</b></div>
+                                </div>
+                            ) : null
+                        }
                     </div>
                     <div className='buttonRow'>
                         <Button
@@ -332,7 +412,7 @@ class SendController extends React.Component {
         );
     }
 
-    onSend() {
+    onSend = () => {
         BigNumber.config({ EXPONENTIAL_AT: [-20, 30] });
         this.setState({
             loading: true,
@@ -341,6 +421,7 @@ class SendController extends React.Component {
         const { formatMessage } = this.props.intl;
         const { value: recipient } = this.state.recipient;
         const { value: amount } = this.state.amount;
+        const memo = this.state.memo.value ? this.state.memo.value.trim() : '';
 
         const {
             id,
@@ -351,7 +432,8 @@ class SendController extends React.Component {
         if(id === 0) {
             func = PopupAPI.sendMcash(
                 recipient,
-                new BigNumber(amount).shiftedBy(CHAIN_DECIMALS).toString()
+                new BigNumber(amount).shiftedBy(CHAIN_DECIMALS).toString(),
+                memo
             );
         } else if(typeof id === 'string' && id.match(/^M/)) {
             func = PopupAPI.sendSmartToken(
@@ -367,7 +449,8 @@ class SendController extends React.Component {
             func = PopupAPI.sendBasicToken(
                 recipient,
                 new BigNumber(amount).shiftedBy(decimals).toString(),
-                tokenId
+                tokenId,
+                memo
             );
         }
 
@@ -376,10 +459,11 @@ class SendController extends React.Component {
             const swalOptions = {
                 type: 'success',
                 title: formatMessage({ id: 'SEND.SUCCESS' }),
-                text: ''
+                text: '',
+                onAfterClose: this.onCancel
             };
             if (txId)
-                swalOptions.footer = `<a href="${MCASHSCAN_URL}/transaction/${txId}" rel='noopener noreferrer' target='_blank'><small>View on Mcashscan</small></a>`;
+                swalOptions.footer = `<a href="${MCASHSCAN_URL}/transaction/${txId}" rel='noopener noreferrer' target='_blank'><small>${ formatMessage({ id: 'TIP.VIEW_ON_EXPLORER' }) }</small></a>`;
             swal(swalOptions);
             this.setState({
                 loading: false
@@ -395,12 +479,12 @@ class SendController extends React.Component {
                 loading: false
             });
         });
-    }
+    };
 
-    onCancel() {
+    onCancel = () => {
         const { selected, selectedToken = {} } = this.props.accounts;
         const token10DefaultImg = require('@mcashlight/popup/src/assets/images/new/token_10_default.png');
-        if( selected.dealCurrencyPage == 1) {
+        if(+selected.dealCurrencyPage === 1) {
             const selectedCurrency = {
                 ...selectedToken,
                 // id: selectedToken.id,
@@ -433,18 +517,25 @@ class SendController extends React.Component {
             PopupAPI.changeState(APP_STATE.READY);
     }
 
+    supportedMemo = () => {
+        const selectedToken = this.state.selectedToken || {};
+        return !selectedToken.id || !isNaN(selectedToken.id);
+    };
+
     render() {
-        const { isOpen, selectedToken, loading, amount, recipient, showConfirm } = this.state;
+        const { formatMessage } = this.props.intl;
+        const { isOpen, selectedToken, loading, amount, recipient, showConfirm, memo } = this.state;
         const { selected, accounts } = this.props.accounts;
         const mcash = { tokenId: 0, name: 'Mcash', balance: selected.balance, abbr: 'MCASH', decimals: CHAIN_DECIMALS, imgUrl: mcashImg };
         let tokens = { ...selected.tokens.basic, ...selected.tokens.smart };
         tokens = Utils.dataLetterSort(Object.entries(tokens).filter(([tokenId, token]) => typeof token === 'object' ).map(v => { v[ 1 ].tokenId = v[ 0 ];return v[ 1 ]; }), 'name');
         tokens = [mcash, ...tokens];
+        const supportedMemo = this.supportedMemo();
         return (
             <div className='insetContainer send' onClick={() => { this.setState({ isOpen: { account: false, token: false } }); }}>
                 {showConfirm ? this.renderConfirmSend() : null}
                 <div className='pageHeader'>
-                    <div className='back' onClick={() => this.onCancel() } />
+                    <div className='back' onClick={ this.onCancel } />
                     <FormattedMessage id='ACCOUNT.SEND'/>
                 </div>
                 <div className='greyModal'>
@@ -477,7 +568,11 @@ class SendController extends React.Component {
                     <div className={`input-group${recipient.error ? ' error' : ''}`}>
                         <label><FormattedMessage id='ACCOUNT.SEND.RECEIVE_ADDRESS'/></label>
                         <div className='input'>
-                            <input type='text' onChange={(e) => { this.onRecipientChange(e); } }/>
+                            <input
+                                value={recipient.value || ''}
+                                type='text'
+                                onChange={(e) => this.onRecipientChange(e.target.value)}
+                            />
                         </div>
                         <div className='tipError'>
                             {recipient.error ? <FormattedMessage id={recipient.error} /> : null}
@@ -523,22 +618,46 @@ class SendController extends React.Component {
                             </div>
                         </div>
                     </div>
-                    <div className={`input-group hasBottomMargin${+amount.value && amount.error ? ' error' : ''}`}>
+                    <div className={`input-group ${+amount.value && amount.error ? ' error' : ''}`}>
                         <label><FormattedMessage id='ACCOUNT.SEND.TRANSFER_AMOUNT'/></label>
                         <div className='input'>
-                            <input type='text' onChange={ (e) => { this.onAmountChange(e); } }/>
+                            <input
+                                value={amount.value || ''}
+                                type='text'
+                                onChange={e => this.onAmountChange(e.target.value)}
+                            />
+                            <button
+                                disabled={ amount.value === selectedToken.amount ? 'disabled' : false }
+                                className={'max'}
+                                onClick={this.clickMaxAmount}
+                            >
+                                {formatMessage({ id: 'BUTTON.MAX' })}
+                            </button>
                         </div>
                         <div className='tipError'>
                             {+amount.value && amount.error ? (amount.values ? <FormattedMessage id={amount.error} values={amount.values} /> : <FormattedMessage id={amount.error} />) : null}
                         </div>
                     </div>
+                    <div className={`input-group hasBottomMargin${memo.error ? ' error' : ''}${supportedMemo ? '' : ' disabled'}`}>
+                        <label>
+                            <FormattedMessage id='ACCOUNT.SEND.MEMO'/>
+                            <small>&nbsp;({ formatMessage({ id: 'ACCOUNT.SEND.OPTIONAL' }) })</small>
+                        </label>
+                        <div className='input'>
+                            <input
+                                value={memo.value || ''}
+                                type='text' disabled={ supportedMemo ? false : 'disabled' }
+                                onChange={e => this.onMemoChange(e) }
+                            />
+                        </div>
+                        <div className='tipError'>
+                            {memo.error ? <FormattedMessage id={memo.error} /> : null}
+                        </div>
+                    </div>
                     <Button
                         id='ACCOUNT.SEND'
                         isLoading={ loading }
-                        isValid={
-                            amount.valid &&
-                            recipient.valid
-                        }
+                        isValid={ amount.valid && recipient.valid && memo.valid }
                         renderIcon={() => <span className={'c-icon icon-send'} />}
                         onClick={ () => this.onConfirmSend() }
                     />
@@ -548,4 +667,8 @@ class SendController extends React.Component {
     }
 }
 
-export default injectIntl(SendController);
+export default connect(state => ({
+    inputDefault: state.sending.inputDefault
+}), {
+    resetInputDefault
+})(injectIntl(SendController));

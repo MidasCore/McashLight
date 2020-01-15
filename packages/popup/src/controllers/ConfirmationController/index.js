@@ -65,7 +65,8 @@ class ConfirmationController extends React.Component {
             whitelisting: {
                 selected: options[ 0 ],
                 options
-            }
+            },
+            otherConfirmation: {}
         };
     }
 
@@ -147,19 +148,31 @@ class ConfirmationController extends React.Component {
         return formatNumber(num, { maximumFractionDigits: CHAIN_DECIMALS });
     };
 
+    handleConfirmation = async () => {
+        try {
+            const { input = {} } = this.props.confirmation;
+            if (input.amount && typeof input.asset_id === 'number') {
+                const tokenInfo = (input && input.tokenInfo) || {};
+                const basicToken = await PopupAPI.getBasicToken(input.asset_id);
+                if (basicToken) {
+                    tokenInfo.precision = basicToken.precision || 0;
+                    tokenInfo.symbol = basicToken.abbr || '';
+                }
+                this.setState({
+                    otherConfirmation: { ...input, tokenInfo }
+                });
+            }
+        } catch (e) {
+            console.error('Error - Confirmation: ', e);
+        }
+    };
+
     renderTransaction() {
-        const {
-            options,
-            selected
-        } = this.state.whitelisting;
+        const { options, selected } = this.state.whitelisting;
 
         const { formatMessage } = this.props.intl;
 
-        const {
-            hostname,
-            contractType,
-            input
-        } = this.props.confirmation;
+        const { hostname, contractType, input } = this.props.confirmation;
 
         const meta = [];
         const showWhitelist = contractType === 'TriggerSmartContract';
@@ -171,8 +184,14 @@ class ConfirmationController extends React.Component {
 
         if(input.amount && (contractType === 'TransferContract' || contractType === 'ParticipateAssetIssueContract'))
             meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.amount)) });
-        else if(input.amount)
-            meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(input.amount) });
+        else if(input.amount) {
+            const { tokenInfo } = this.state.otherConfirmation || {};
+            if (!tokenInfo)
+                this.handleConfirmation();
+            const { precision = 0, symbol } = tokenInfo || {}
+            const value = this.numberFormat(fromAmount(input.amount, precision)) + (symbol ? ` ${symbol}` : '');
+            meta.push({ key: 'CONFIRMATIONS.COST', value });
+        }
 
         if(input.frozen_balance)
             meta.push({ key: 'CONFIRMATIONS.COST', value: this.numberFormat(fromAmount(input.frozen_balance)) });
@@ -294,7 +313,7 @@ class ConfirmationController extends React.Component {
     render() {
         const {
             type
-        } = this.props.confirmation;
+        } = this.props.confirmation || {};
         return (
             <div className='insetContainer confirmationController'>
                 <div className='greyModal confirmModal'>

@@ -222,6 +222,53 @@ const Utils = {
     prettyErrorMessage(message) {
         const errorMessageRegex = new RegExp('class [a-zA-Z._$]+ :');
         return message.replace(errorMessageRegex, '').trim();
+    },
+
+    byteLength (str) {
+        if (!str) return 0;
+        return encodeURI(str).split(/%..|./).length - 1;
+    },
+
+    numberFormat (number, decimals = null, decPoint, thousandsSep, trailingZeros = false) {
+        if (typeof number === 'undefined') return;
+        // Strip all characters but numerical ones.
+        const numerical = (`${number}`).replace(/[^0-9+\-Ee.]/g, '');
+        const n = !isFinite(+numerical) ? 0 : +numerical;
+        const prec = !isFinite(+decimals) ? 0 : Math.abs(decimals);
+        const sep = (typeof thousandsSep === 'undefined') ? ',' : thousandsSep;
+        const dec = (typeof decPoint === 'undefined') ? '.' : decPoint;
+        let s = '';
+        const toFixedFix = function (n, prec) {
+            const k = Math.pow(10, prec);
+            return `${Math.round(n * k) / k}`;
+        };
+        // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+        s = (decimals === null ? `${n}` : (prec ? toFixedFix(n, prec) : `${Math.round(n)}`)).split('.');
+        if (s[0].length > 3)
+            s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+        if ((s[1] || '').length < prec) {
+            s[1] = s[1] || '';
+            if (trailingZeros) {
+                // 1.123 with decimals = 5 => 1.12300
+                s[1] += new Array(prec - s[1].length + 1).join('0');
+            }
+        }
+        return s[1] ? s.join(dec) : s[0];
+    },
+
+    formattedPrice (price) {
+        return price ? this.numberFormat(price, +price > 10 ? 2 : 4) : price;
+    },
+
+    getTokenPrice (token, selectedPrice) {
+        let price = token.price || 0;
+        try {
+            if (!price && token.priceList && token.priceList[ selectedPrice ])
+                price = token.priceList[ selectedPrice ].rate || 0;
+        } catch (e) {
+            console.error('detect token price:', e);
+        }
+        return price || 0;
     }
 
 };

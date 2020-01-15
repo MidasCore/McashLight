@@ -84,6 +84,9 @@ class RegistrationController extends React.Component {
     onButtonClick() {
         const { password } = this.state;
 
+        if (!this.arePasswordsValid())
+            return;
+
         this.setState({
             loading: true
         });
@@ -98,6 +101,11 @@ class RegistrationController extends React.Component {
             }));
     }
 
+    arePasswordsValid = () => {
+        const { password, repeatPassword } = this.state;
+        return password.isValid === VALIDATION_STATE.VALID && repeatPassword.isValid === VALIDATION_STATE.VALID;
+    };
+
     render() {
         const {
             password,
@@ -107,17 +115,12 @@ class RegistrationController extends React.Component {
             languages
         } = this.state;
         const { language } = this.props;
-        const arePasswordsValid =
-            password.isValid === VALIDATION_STATE.VALID &&
-            repeatPassword.isValid === VALIDATION_STATE.VALID;
-        const fliterLanguage = languages.filter(v => v.key === language)[ 0 ];
+        const filterLanguage = languages.filter(v => v.key === language)[ 0 ];
         return (
             <div className='insetContainer logoWrap'>
                 <div className='setLanguage'>
-                    <div className={`language ${fliterLanguage.key}`}>
-                        {
-                            fliterLanguage.name
-                        }
+                    <div className={`language ${filterLanguage.key}`}>
+                        { filterLanguage.name }
                         <div className='drop'>
                             {
                                 languages.map(({ key, name }, index) => (
@@ -182,7 +185,7 @@ class RegistrationController extends React.Component {
                     </div>
                     <Button
                         id='BUTTON.CONTINUE'
-                        isValid={ arePasswordsValid }
+                        isValid={ this.arePasswordsValid() }
                         isLoading={ loading }
                         onClick={ this.onButtonClick }
                         tabIndex={ 3 }

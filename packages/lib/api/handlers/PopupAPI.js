@@ -43,12 +43,12 @@ export default {
 
     // Transaction handling
 
-    sendMcash(recipient, amount) {
-        return this.duplex.send('sendMcash', { recipient, amount });
+    sendMcash(recipient, amount, memo) {
+        return this.duplex.send('sendMcash', { recipient, amount, memo });
     },
 
-    sendBasicToken(recipient, amount, token) {
-        return this.duplex.send('sendBasicToken', { recipient, amount, token });
+    sendBasicToken(recipient, amount, token, memo) {
+        return this.duplex.send('sendBasicToken', { recipient, amount, token, memo });
     },
 
     sendSmartToken(recipient, amount, token) {
@@ -108,8 +108,8 @@ export default {
         this.duplex.send('addNode', node, false);
     },
 
-    deleteNode() {
-
+    deleteNode(nodeID) {
+        this.duplex.send('deleteNode', nodeID, false);
     },
 
     getNodes() {
@@ -118,6 +118,10 @@ export default {
 
     getSmartToken(address) {
         return this.duplex.send('getSmartToken', address);
+    },
+
+    getBasicToken(tokenId) {
+        return this.duplex.send('getBasicToken', tokenId);
     },
 
     // Wallet authentication

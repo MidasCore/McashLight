@@ -16,7 +16,7 @@ import '@mcashlight/popup/src/controllers/PageController/Header/Header.scss';
 import { ACTIVE_ACCOUNT_FEE, CHAIN_DECIMALS } from '../../config/constants';
 import Backup from './Backup';
 import Resource from './Resource';
-import Ieos from './Ieos';
+// import Ieos from './Ieos';
 import Tokens from './Tokens';
 
 const antdAlert = Modal.alert;
@@ -36,8 +36,7 @@ class AccountsPage extends React.Component {
             showNodeList: false,
             showBackUp: false,
             showDelete: false,
-            news: [],
-            ieos: []
+            news: []
         };
     }
 
@@ -55,12 +54,8 @@ class AccountsPage extends React.Component {
         //const { developmentMode } = this.props.setting;
         mcashscanUrl = 'https://mcashscan.io/#';
         const news = await PopupAPI.getNews();
-        const ieos = await PopupAPI.getIeos();
         if(news.length > 0)
             this.setState({ news });
-
-        if(ieos.length > 0)
-            this.runTime(ieos);
 
         await PopupAPI.setAirdropInfo(accounts.selected.address);
         const dappList = await PopupAPI.getDappList(false);
@@ -97,25 +92,6 @@ class AccountsPage extends React.Component {
         this.closeAlertActiveAccount();
         PopupAPI.changeState(APP_STATE.ACTIVE_ACCOUNT);
     };
-
-    runTime(ieos) {
-        for(const o of ieos) {
-            if(o.time >= 0) {
-                o.timer = this.getTime(o.time);
-                o.time--;
-            }
-        }
-        this.setState({ ieos });
-        setTimeout(() => { this.runTime(this.state.ieos); }, 1000);
-    }
-
-    getTime(time) {
-        const day = Math.floor( time / ( 24 * 60 * 60 ) );
-        const hours = Math.floor( time / ( 60 * 60 ) ) - (24 * day);
-        const minutes = Math.floor( ( time % ( 60 * 60 ) ) / 60);
-        const seconds = Math.floor(time % 60);
-        return [hours > 9 ? hours : `0${ hours}`, minutes > 9 ? minutes : `0${minutes}`, seconds > 9 ? seconds : `0${ seconds}`, day];
-    }
 
     onClick(address) {
         const { selected } = this.props.accounts;
@@ -218,14 +194,14 @@ class AccountsPage extends React.Component {
                         text={accounts.selected.address}
                         onCopy={text => {
                             console.log('Copy to clipboard: ', text);
-                            Toast.info(formatMessage({ id: 'TOAST.COPY' }), 2);
+                            Toast.info(formatMessage({ id: 'TOAST.COPY' }), 2, () => {}, false);
                         }}
                     >
                         <span className='copy' />
                     </CopyTextToClipboard>
                 </div>
                 <div className='row3'>
-                    ≈ {mcashPrice ? totalMoney : '--'} {prices.selected}
+                    ≈ {mcashPrice ? Utils.formattedPrice(totalMoney) : '--'} {prices.selected}
                 </div>
                 <div className='row4'>
                     <div onClick={ () => PopupAPI.changeState(APP_STATE.RECEIVE) }>
@@ -243,8 +219,9 @@ class AccountsPage extends React.Component {
 
     renderDeleteAccount() {
         const { showDelete } = this.state;
-        const dom = showDelete
-            ?
+        if (!showDelete) return null;
+        const { formatMessage } = this.props.intl;
+        return (
             <div className='popUp'>
                 <div className='deleteAccount'>
                     <div className='title'>
@@ -263,14 +240,17 @@ class AccountsPage extends React.Component {
                         />
                         <Button
                             id='BUTTON.CONFIRM'
-                            onClick={() => { PopupAPI.deleteAccount();this.setState({ showDelete: false }); }}
+                            onClick={() => {
+                                PopupAPI.deleteAccount();
+                                swal(formatMessage({ id: 'ACCOUNTS.DELETE.SUCCESS' }), '', 'success');
+                                this.setState({ showDelete: false });
+                            }}
                             tabIndex={ 1 }
                         />
                     </div>
                 </div>
             </div>
-            : null;
-        return dom;
+        );
     }
 
     renderBackup(mnemonic, privateKey) {
@@ -289,7 +269,7 @@ class AccountsPage extends React.Component {
         let totalAsset = new BigNumber(0);
         let totalMcash = new BigNumber(0);
         // const { showNodeList, mnemonic, privateKey, news, ieos } = this.state;
-        const { showNodeList, mnemonic, privateKey, ieos } = this.state;
+        const { showNodeList, mnemonic, privateKey } = this.state;
         // const id = news.length > 0 ? news[ 0 ].id : 0;
         const { accounts, prices, nodes, setting } = this.props;
         // const { selected: { airdropInfo } } = accounts;
@@ -320,8 +300,15 @@ class AccountsPage extends React.Component {
             totalAsset = totalAsset.plus(new BigNumber(account.asset));
             totalMcash = totalMcash.plus(new BigNumber(account.balance).shiftedBy(-8));
         });
-        const asset = accounts.accounts[ accounts.selected.address ] && accounts.accounts[ accounts.selected.address ].asset ? accounts.accounts[ accounts.selected.address ].asset : 0;
-        const totalMoney = new BigNumber(asset).multipliedBy(mcash_price).toFixed(2);
+        // const asset = accounts.accounts[ accounts.selected.address ] && accounts.accounts[ accounts.selected.address ].asset ? accounts.accounts[ accounts.selected.address ].asset : 0;
+        // const totalMoney = Utils.formattedPrice(new BigNumber(asset).multipliedBy(mcash_price).toString());
+        const totalMoney = tokens.reduce((total, token) => {
+            const amount = new BigNumber(token.balance).shiftedBy(-token.decimals);
+            const price = Utils.getTokenPrice(token, prices.selected);
+            const money = amount.multipliedBy(price);
+            return new BigNumber(total).plus(money).toString();
+        }, 0);
+
         return (
             <div className='accountsPage' onClick={() => {
                 this.setState({
@@ -343,48 +330,6 @@ class AccountsPage extends React.Component {
                     openAccountsMenu={this.openAccountsMenu}
                 />
                 <div className='space-controller'>
-                    {/*{*/}
-                    {/*nodes.selected === BANKER_NODE && id !== 0 && (!setting.advertising[ id ] || (setting.advertising[ id ] && setting.advertising[ id ][ mode ])) ?*/}
-                    {/*<div className='advertisingWrap'>*/}
-                    {/*<div className='closed' onClick={async () => {*/}
-                    {/*const advertising = setting.advertising ? setting.advertising : {};*/}
-                    {/*advertising[ id ] = { developmentMode: true, productionMode: true };*/}
-                    {/*advertising[ id ][ mode ] = false;*/}
-                    {/*advertising[ id ][ mode ] = false;*/}
-                    {/*PopupAPI.setSetting({ ...setting, advertising });*/}
-                    {/*}}>*/}
-                    {/*</div>*/}
-                    {/*{*/}
-                    {/*news.map(({ language, ...news }) => {*/}
-                    {/*let l = 1;*/}
-                    {/*switch(lng) {*/}
-                    {/*case 'en':*/}
-                    {/*l = 1;*/}
-                    {/*break;*/}
-                    {/*case 'zh':*/}
-                    {/*l = 2;*/}
-                    {/*break;*/}
-                    {/*case 'ja':*/}
-                    {/*l = 3;*/}
-                    {/*break;*/}
-                    {/*default:*/}
-                    {/*l = 1;*/}
-                    {/*}*/}
-                    {/*return (*/}
-                    {/*language === l ?*/}
-                    {/*<div onClick={ async () => {*/}
-                    {/*const r = await PopupAPI.addCount(news.id);*/}
-                    {/*if(r)*/}
-                    {/*window.open(news.content_url);*/}
-                    {/*}}>*/}
-                    {/*{ news.pic_url ? <img src={news.pic_url} alt='' /> : null }*/}
-                    {/*{ news.content ? <div><span style={{ webkitBoxOrient: 'vertical' }}>{news.content}</span></div> : null }*/}
-                    {/*</div> : null*/}
-                    {/*)*/}
-                    {/*})*/}
-                    {/*}*/}
-                    {/*</div>:null*/}
-                    {/*}*/}
                     <div className={`accountsWrap${setting.openAccountsMenu ? ' show' : ''}`}>
                         <div className='accounts'>
                             <div className='row1'>
@@ -402,7 +347,7 @@ class AccountsPage extends React.Component {
                                 </div>
                                 <div className='cell'>
                                     <FormattedMessage id='MENU.ACCOUNTS.TOTAL_ASSET' values={{ sign: ':' }} />
-                                    <span>{mcash_price ? new BigNumber(totalAsset.multipliedBy(mcash_price).toFixed(2)).toFormat() : '--'}{ ' ' }{ prices.selected }</span>
+                                    <span>{mcash_price ? Utils.formattedPrice(totalAsset.multipliedBy(mcash_price).toString()) : '--'}{ ' ' }{ prices.selected }</span>
                                 </div>
                             </div>
                             <div className='row3'>
@@ -424,7 +369,7 @@ class AccountsPage extends React.Component {
                                                     </div>
                                                     <div className='asset'>
                                                         <span>MCASH: { new BigNumber(new BigNumber(account.balance).shiftedBy(-8).toFixed(2)).toFormat() }</span>
-                                                        <span><FormattedMessage id='MENU.ACCOUNTS.TOTAL_ASSET' values={{ sign: ':' }} />{' '}{mcash_price ? new BigNumber(new BigNumber(account.asset).multipliedBy(mcash_price).toFixed(2)).toFormat() : '--'}{' '}{ prices.selected }</span>
+                                                        <span><FormattedMessage id='MENU.ACCOUNTS.TOTAL_ASSET' values={{ sign: ':' }} />{' '}{mcash_price ? Utils.formattedPrice(new BigNumber(account.asset).multipliedBy(mcash_price).toString()) : '--'}{' '}{ prices.selected }</span>
                                                     </div>
                                                 </div>
                                                 <div className='bottom'>
@@ -435,7 +380,7 @@ class AccountsPage extends React.Component {
                                                             text={address}
                                                             onCopy={text => {
                                                                 console.log('Copy to clipboard: ', text);
-                                                                Toast.info(formatMessage({ id: 'TOAST.COPY' }));
+                                                                Toast.info(formatMessage({ id: 'TOAST.COPY' }), 2, () => {}, false);
                                                             }}
                                                         >
                                                             <span className='copy'/>
@@ -459,7 +404,6 @@ class AccountsPage extends React.Component {
                     { accounts.selected.address ? this.renderAccountInfo(accounts, prices, totalMoney, mcash_price) : null }
                     <div className='listWrap'>
                         <Resource account={accounts.accounts[ accounts.selected.address ]} />
-                        <Ieos ieos={ieos} />
                         <div className='scroll'>
                             <Tokens tokens={tokens} />
                         </div>

@@ -224,7 +224,7 @@ class Account {
     }
 
     getTokenIcon(tokenId) {
-        let iconUrl = ''
+        let iconUrl = '';
         // mainnet
         if (NodeService.getNodes().selected === '6be34522-8ad5-4631-b785-755ea7d870d8')
             iconUrl = 'https://raw.githubusercontent.com/MidasCore/mcashchain-assets/master/tokens/mainnet/:tokenId.png';
@@ -263,16 +263,16 @@ class Account {
                 return value > 0;
             });
             if (filteredTokens.length > 0) {
-                const objFilteredTokensKey = {}
+                const objFilteredTokensKey = {};
                 for (const { key, value } of filteredTokens) {
                     let token = this.tokens.basic[ key ] || false;
-                    const filter = basicTokenPriceList.filter(({ first_token_id: firstTokenId }) => firstTokenId === key);
-                    const token20Filter = smartTokenPriceList.filter(({ fTokenAddr }) => key === fTokenAddr);
-                    const obj = filter.length ? filter[ 0 ] : (token20Filter.length ? {
-                        price: token20Filter[ 0 ].price,
-                        precision: token20Filter[ 0 ].sPrecision
-                    } : { price: 0, precision: 0 });
-                    const price = obj.price / Math.pow(10, obj.precision);
+                    // const filter = basicTokenPriceList.filter(({ first_token_id: firstTokenId }) => firstTokenId === key);
+                    // const token20Filter = smartTokenPriceList.filter(({ fTokenAddr }) => key === fTokenAddr);
+                    // const obj = filter.length ? filter[ 0 ] : (token20Filter.length ? {
+                    //     price: token20Filter[ 0 ].price,
+                    //     precision: token20Filter[ 0 ].sPrecision
+                    // } : { price: 0, precision: 0 });
+                    // const price = obj.price / Math.pow(10, obj.precision);
                     if ((!token && !StorageService.tokenCache.hasOwnProperty(key)) || (token && typeof token.imgUrl === 'undefined'))
                         await StorageService.cacheToken(key);
 
@@ -292,10 +292,12 @@ class Account {
                             imgUrl: imgUrl || this.getTokenIcon(key)
                         };
                     }
+                    const tokenPriceList = basicTokenPriceList.find(({ code }) => code === `MCASH@${key}`);
                     this.tokens.basic[ key ] = {
                         ...token,
                         balance: value,
-                        price
+                        price: 0,
+                        priceList: tokenPriceList && tokenPriceList.rates ? tokenPriceList.rates : {}
                     };
                     objFilteredTokensKey[ key ] = true;
                 }
@@ -327,19 +329,21 @@ class Account {
                     else
                         balance = new BigNumber(number).toString();
 
-                    if (typeof token.name === 'object') {
-                        const token2 = await NodeService.getSmartToken(tokenId);
-                        this.tokens.smart[ tokenId ] = token2;
-                    } else
+                    if (typeof token.name === 'object')
+                        this.tokens.smart[ tokenId ] = await NodeService.getSmartToken(tokenId);
+                    else
                         this.tokens.smart[ tokenId ] = token;
 
+                    const tokenPriceList = smartTokenPriceList.find(({ code }) => code === `MCASH@${tokenId}`);
                     // todo: check logo_url (imgUrl)
                     this.tokens.smart[ tokenId ].imgUrl = this.getTokenIcon(tokenId);
                     this.tokens.smart[ tokenId ].balance = balance;
                     this.tokens.smart[ tokenId ].price = 0;
+                    this.tokens.smart[ tokenId ].priceList = tokenPriceList && tokenPriceList.rates ? tokenPriceList.rates : {};
                 } else {
                     this.tokens.smart[ tokenId ].balance = 0;
                     this.tokens.smart[ tokenId ].price = 0;
+                    this.tokens.smart[ tokenId ].priceList = {};
                 }
             }
             //
@@ -409,7 +413,7 @@ class Account {
         const { address } = this;
         logger.info(`Requested smart tokens for ${ address }`);
         const currentNode = NodeService.getCurrentNode();
-        const baseUrl = currentNode && currentNode.mcashScan ? currentNode.mcashScan : 'https://api.mcashscan.io';
+        const baseUrl = currentNode && currentNode.mcashScanApi ? currentNode.mcashScanApi : 'https://api.mcashscan.io';
         const { data } = await axios.get(`${baseUrl}/api/accounts/${address}`, {
             timeout: 10000
         }).catch(() => ( { data: {} } ));
@@ -490,11 +494,13 @@ class Account {
         return await signedTransaction;
     }
 
-    async sendMcash(recipient, amount) {
+    async sendMcash(recipient, amount, memo) {
         try {
             const transaction = await NodeService.mcashWeb.transactionBuilder.sendMcash(
                 recipient,
-                amount
+                amount,
+                undefined,
+                memo
             );
 
             return await NodeService.mcashWeb.mcash.sendRawTransaction(
@@ -508,7 +514,7 @@ class Account {
         }
     }
 
-    async sendBasicToken(recipient, amount, token) {
+    async sendBasicToken(recipient, amount, token, memo) {
         try {
             let tokenId = token;
             if (typeof token === 'string')
@@ -517,7 +523,9 @@ class Account {
             const transaction = await NodeService.mcashWeb.transactionBuilder.sendToken(
                 recipient,
                 amount,
-                tokenId
+                tokenId,
+                undefined,
+                memo
             );
 
             return await NodeService.mcashWeb.mcash.sendRawTransaction(

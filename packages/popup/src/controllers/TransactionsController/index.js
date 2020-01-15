@@ -1,64 +1,55 @@
 import React from 'react';
-import moment from 'moment';
+import { connect } from 'react-redux';
 // import CopyToClipboard from 'react-copy-to-clipboard';
 import { Toast } from 'antd-mobile';
 import { BigNumber } from 'bignumber.js';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { PopupAPI } from '@mcashlight/lib/api';
 import { APP_STATE } from '@mcashlight/lib/constants';
+import Utils from '@mcashlight/lib/utils';
 import CopyTextToClipboard from '@mcashlight/popup/src/components/CopyTextToClipboard';
+import { setInputDefault } from '@mcashlight/popup/src/reducers/sendingReducer';
+import TransactionList from './TransactionList';
 import { MCASHSCAN_URL } from '../../config/constants';
 
 BigNumber.config({ EXPONENTIAL_AT: [-20, 30] });
 const token10DefaultImg = require('@mcashlight/popup/src/assets/images/new/token_10_default.png');
 
 class TransactionsController extends React.Component {
-    constructor(props) {
+    constructor (props) {
         super(props);
         this.state = {
-            index: 0,
-            isTop: false,
-            transactions: {
-                records: [],
-                total: 0
-            },
-            isRequest: false,
-            currentPage: 1
+            isTop: false
         };
     }
 
-    async componentDidMount() {
-        const {
-            accounts
-        } = this.props;
-        const { id = 0 } = accounts.selectedToken;
-        Toast.loading('', 0);
-        const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id })
-            .finally(() => {
-                Toast.hide();
-            });
-        this.setState({ transactions });
-    }
+    handleChangeIsTop = (value) => {
+        this.setState({ isTop: value });
+    };
+
+    openSend = (inputDefault) => {
+        PopupAPI.changeDealCurrencyPage(1);
+        PopupAPI.changeState(APP_STATE.SEND);
+        this.props.setInputDefault(inputDefault);
+    };
 
     render() {
-        const { index, isTop, transactions, isRequest, currentPage } = this.state;
-        const {
-            accounts,
-            onCancel,
-            prices
-        } = this.props;
+        const { isTop } = this.state;
+        const { accounts, onCancel, prices, nodes } = this.props;
+        const currentNode = (nodes && nodes.nodes && nodes.nodes[ nodes.selected ]) || {};
         const { formatMessage } = this.props.intl;
-        const { address } = accounts.selected;
-        const { id = 0, name = 'MCASH', decimals = 8, imgUrl, price = 0, amount, balance, frozenBalance, stakeBalance } = accounts.selectedToken;
+        const { id = 0, name = 'MCASH', imgUrl, amount, balance, frozenBalance, stakeBalance } = accounts.selectedToken;
+        const price = Utils.getTokenPrice(accounts.selectedToken, prices.selected);
+        const money = Utils.formattedPrice(new BigNumber(amount).multipliedBy(price).toString());
         return (
             <div className='insetContainer transactions'>
                 <div className='pageHeader'>
-                    <div className='back' onClick={onCancel}></div>
+                    <div className='back' onClick={onCancel} />
                     <span className='title'>{name}</span>
                     {
                         id !== 0 ?
                             <span className='detail' onClick={() => {
-                                let url = 'https://mcashscan.io/#/';
+                                let url = currentNode.mcashScanExplorer || MCASHSCAN_URL;
                                 url += (typeof id === 'string' && id.match(/^M/) ? `token20/${id}` : `token/${id}`);
                                 window.open(url);
                             }}
@@ -71,12 +62,12 @@ class TransactionsController extends React.Component {
                 </div>
                 <div className='greyModal'>
                     <div className='showTokenInfo' style={ isTop ? { height: 0, paddingTop: 0, overflow: 'hidden' } : { overflow: 'hidden', height: (id === 0 ? 216 : 176) }}>
-                        <img src={imgUrl || token10DefaultImg} onError={(e) => { e.target.src = token10DefaultImg; }} />
+                        <img src={imgUrl || token10DefaultImg} onError={(e) => { e.target.src = token10DefaultImg; }} alt={''} />
                         <div className='amount'>
-                            {amount}
+                            {Utils.numberFormat(amount)}
                         </div>
                         <div className='worth'>
-                            ≈ { price ? (id === 0 ? (price * amount).toFixed(2) : (price * amount * prices.priceList[ prices.selected ]).toFixed(2)) : '--'} {prices.selected}
+                            ≈ { price ? money : '--'} {prices.selected}
                         </div>
                         {
                             id === 0 ?
@@ -133,125 +124,22 @@ class TransactionsController extends React.Component {
                         }
 
                     </div>
-                    <div className='tabNav'>
-                        <div className={index == 0 ? 'active' : '' } onClick={async () => {
-                            this.setState({ index: 0 });
-                            Toast.loading('', 0);
-                            const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id, start: 0, direction: 'all' });
-                            Toast.hide();
-                            this.setState({ transactions, currentPage: 1, isRequest: false });
-                        }}
-                        >
-                            <FormattedMessage id='ACCOUNT.ALL'/>
-                        </div>
-                        <div className={ index == 2 ? 'active' : '' } onClick={async () => {
-                            this.setState({ index: 2 });
-                            Toast.loading('', 0);
-                            const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id, start: 0, direction: 'from', type: 'Transfer' });
-                            Toast.hide();
-                            this.setState({ transactions, currentPage: 1, isRequest: false });
-                        }}
-                        >
-                            <FormattedMessage id='ACCOUNT.RECEIVE' />
-                        </div>
-                        <div className={index == 1 ? 'active' : ''} onClick={async () => {
-                            this.setState({ index: 1 }) ;
-                            Toast.loading('', 0);
-                            const transactions = await PopupAPI.getTransactionsByTokenId({ tokenId: id, start: 0, direction: 'to', type: 'Transfer' });
-                            Toast.hide();
-                            this.setState({ transactions, currentPage: 1, isRequest: false });
-                        }}
-                        >
-                            <FormattedMessage id='ACCOUNT.SEND' />
-                        </div>
-                    </div>
-                    <div className='transaction scroll' onScroll={async(e) => {
-                        const key = index === 0 ? 'all' : ( index === 1 ? 'to' : 'from');
-                        if(transactions.records.length > 8) {
-                            const isTop = !(e.target.scrollTop === 0);
-                            this.setState({ isTop });
-                            if(e.target.scrollTop === (((58 * transactions.records.length) + 36) - 484)) {
-                                if(!isRequest) {
-                                    this.setState({ isRequest: true });
-                                    const page = currentPage + 1;
-                                    Toast.loading('', 0);
-                                    const records = await PopupAPI.getTransactionsByTokenId({ tokenId: id, start: page - 1, direction: key });
-                                    Toast.hide();
-                                    if(records.records.length === 0)
-                                        this.setState({ isRequest: true });
-                                    else{
-                                        console.log('0%', records.records);
-                                        console.log('0%', transactions);
-                                        transactions.records = transactions.records.concat(records.records);
-                                        this.setState({ transactions, currentPage: page, isRequest: false });
-                                    }
-                                }
-                            }
-                        }
-                    }}
-                    >
-                        {
-                            transactions.records.length > 0 ?
-                                <div className='lists'>
-                                    {
-                                        transactions.records.map((v, transIndex) => {
-                                            let callValue = 0;
-                                            let direction;
-                                            let addr;
-                                            let hash;
-                                            if(typeof v.asset_id !== 'undefined') {
-                                                callValue = v.amount;
-                                                direction = v.to_address && v.owner_address ? (v.to_address === v.owner_address ? '' : (v.to_address === address ? 'receive' : 'send')) : '';
-                                                // addr = v.toAddress; //trigger => ownerAddress show toAddress
-                                                addr = v.to_address === address ? v.owner_address : v.to_address; //trigger => ownerAddress show toAddress
-                                                hash = v.hash;
-                                            }else{
-                                                direction = v.to_address && v.from_address ? (v.to_address === v.from_address ? '' : (v.to_address === address ? 'receive' : 'send')) : '';
-                                                addr = v.to_address === address ? v.from_address : v.to_address;
-                                                callValue = v.amount;
-                                                hash = v.transaction_hash;
-                                            }
-                                            if (!addr)
-                                                addr = '';
-
-                                            const shortAddr = addr ? `${addr.substr(0, 4)}...${addr.substr(-12)}` : (v.contract_type || '');
-                                            return (
-                                                <div
-                                                    className={`item ${direction}`} key={transIndex}
-                                                    onClick={(e) => { e.stopPropagation();window.open(`${MCASHSCAN_URL}/transaction/${hash}`); }}
-                                                >
-                                                    <div className='left'>
-                                                        <div className='address'>{shortAddr}</div>
-                                                        <div className='time'>{moment(v.timestamp).format('YYYY-MM-DD HH:mm:ss')}</div>
-                                                    </div>
-                                                    <div className='right'>
-                                                        {new BigNumber(callValue).shiftedBy(-decimals).toString()}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    }
-                                </div>
-                                :
-                                <div className='noData'>
-                                    <FormattedMessage id='TRANSACTIONS.NO_DATA' />
-                                </div>
-                        }
-                    </div>
+                    <TransactionList
+                        accounts={accounts}
+                        currentNode={currentNode}
+                        onChangeIsTop={this.handleChangeIsTop}
+                        onSendTo={this.openSend}
+                    />
                 </div>
                 <div className='buttonGroup'>
-                    <button className='receive' onClick={ (e) => {
+                    <button className='receive' onClick={ () => {
                         PopupAPI.changeDealCurrencyPage(1);
                         PopupAPI.changeState(APP_STATE.RECEIVE);
                     }}
                     >
                         <FormattedMessage id='ACCOUNT.RECEIVE'/>
                     </button>
-                    <button className='send' onClick={ (e) => {
-                        PopupAPI.changeDealCurrencyPage(1);
-                        PopupAPI.changeState(APP_STATE.SEND);
-                    }}
-                    >
+                    <button className='send' onClick={this.openSend}>
                         <FormattedMessage id='ACCOUNT.SEND'/>
                     </button>
                 </div>
@@ -260,4 +148,6 @@ class TransactionsController extends React.Component {
     }
 }
 
-export default injectIntl(TransactionsController);
+export default connect(null, {
+    setInputDefault
+})(injectIntl(TransactionsController));

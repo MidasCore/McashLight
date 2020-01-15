@@ -133,17 +133,42 @@ class Wallet extends EventEmitter {
 
         const accounts = Object.values(this.accounts);
         if(accounts.length > 0) {
-            // const { data: { data: basicTokenPriceList } } = await axios.get('https://bancor.trx.market/api/exchanges/list?sort=-balance').catch(e => {
-            //     return { data: { data: [] } };
+            // const { data: { data: basicTokenPriceList } } = await axios.get('https://api.midasprotocol.com/token/v1/prices?fromCodes=MCASH@1000011,MCASH@1000001&toCodes=USD,BTC,ETH').catch(() => {
+            //     logger.error('get M1 token price fail');
+            //     return { data: { data: { items: [] } } };
             // });
-            // const { data: { data: { rows: smartTokenPriceList } } } = await axios.get('https://api.trx.market/api/exchange/marketPair/list').catch(e => {
-            //     return { data: { data: { rows: [] } } };
+            // const { data: { data: { rows: smartTokenPriceList } } } = await axios.get('https://api.midasprotocol.com/token/v1/prices?fromCodes=MCASH@MEKeo29kLUVEdckZ65F9ZnZGpgEDJpshsb&toCodes=USD,BTC,ETH').catch(() => {
+            //     logger.error('get M20 token price fail');
+            //     return { data: { data: { items: [] } } };
             // });
             // const prices = StorageService.prices;
             basicPrice = []; //basicTokenPriceList
             smartPrice = []; //smartTokenPriceList
             for (const account of accounts) {
                 if (account.address === this.selectedAccount) {
+                    // get prices
+                    if (NodeService.getPriceApiUrl('')) {
+                        let basicCodes = '';
+                        let smartCodes = '';
+                        const { basic, smart } = account.tokens || {};
+                        if (basic && Object.keys(basic).length > 0)
+                            basicCodes += Object.keys(basic).map(id => `MCASH@${ id }`).join(',');
+                        if (smart && Object.keys(smart).length > 0)
+                            smartCodes += Object.keys(smart).map(id => `MCASH@${ id }`).join(',');
+                        const { data: { data: basicData } } = await axios.get(NodeService.getPriceApiUrl(basicCodes))
+                            .catch(() => {
+                                logger.error('get M1 token price fail');
+                                return { data: { data: { items: [] } } };
+                            });
+                        basicPrice = basicData && Array.isArray(basicData.items) ? basicData.items : [];
+                        const { data: { data: smartData } } = await axios.get(NodeService.getPriceApiUrl(smartCodes))
+                            .catch(() => {
+                                logger.error('get M20 token price fail');
+                                return { data: { data: { items: [] } } };
+                            });
+                        smartPrice = smartData && Array.isArray(smartData.items) ? smartData.items : [];
+                    }
+                    //
                     Promise.all([account.update(basicPrice, smartPrice)]).then(() => {
                         if (account.address === this.selectedAccount)
                             this.emit('setAccount', this.selectedAccount);
@@ -399,8 +424,9 @@ class Wallet extends EventEmitter {
 
     async lockWallet() {
         StorageService.lock();
-        //this.accounts = {};
-        //this.selectedAccount = false;
+        this.accounts = {};
+        this.selectedAccount = false;
+        this.emit('setAccount', this.selectedAccount);
         this._setState(APP_STATE.PASSWORD_SET);
     }
 
@@ -631,6 +657,16 @@ class Wallet extends EventEmitter {
         );
     }
 
+    deleteNode(nodeID) {
+        let changed = false;
+        if (nodeID === NodeService.getNodes().selected) {
+            changed = true;
+            const firstNodeID = Object.keys(NodeService.getNodes().nodes)[ 0 ];
+            firstNodeID && this.selectNode(firstNodeID);
+        }
+        NodeService.deleteNode(nodeID, changed);
+    }
+
     getAccounts() {
         const accounts = Object.entries(this.accounts).reduce((accounts, [ address, account ]) => {
             accounts[ address ] = {
@@ -742,20 +778,22 @@ class Wallet extends EventEmitter {
         return this.confirmations;
     }
 
-    async sendMcash({ recipient, amount }) {
+    async sendMcash({ recipient, amount, memo }) {
         const result = await this.accounts[ this.selectedAccount ].sendMcash(
             recipient,
-            amount
+            amount,
+            memo
         );
         this.refresh();
         return result;
     }
 
-    async sendBasicToken({ recipient, amount, token }) {
+    async sendBasicToken({ recipient, amount, token, memo }) {
         const result = await this.accounts[ this.selectedAccount ].sendBasicToken(
             recipient,
             amount,
-            token
+            token,
+            memo
         );
         this.refresh();
         return result;
@@ -885,58 +923,67 @@ class Wallet extends EventEmitter {
         };
     }
 
-    async getTransactionsByTokenId({ tokenId, start = 0, direction = 'all', type = '' }) {
-        //
-        const node = NodeService.getCurrentNode();
-        const baseApiUrl = (node && node.mcashScan) ? node.mcashScan : 'https://api.mcashscan.io';
-        //
-        const address = this.selectedAccount;
-        const limit = 30;
-        let params = { limit, start: limit * start };
-        let newRecord = [];
-        if (direction === 'all')
-            params = { ...params, address };
-        else if (direction === 'to') {
-            // sender
-            params = { ...params, from_address: address };
-        } else {
-            // receiver
-            params = { ...params, to_address: address };
+    mapTokenData (items, tokenMap, key = 'asset_id') {
+        if (Array.isArray(items) && tokenMap) {
+            return items.map(obj => {
+                const token = typeof obj[ key ] !== 'undefined' ? tokenMap[ obj[ key ] ] : {};
+                const newObj = { ...obj, token };
+                if (typeof obj.token_id !== 'undefined' && token && token.nft_token_map)
+                    newObj.nftToken = token.nft_token_map[ obj.token_id ];
+                return newObj;
+            });
         }
-        if(!isNaN(tokenId)) {
-            params.asset_id = tokenId || 0;
-            if (type)
-                params.type = type;
-            const { data } = await axios.get(`${baseApiUrl}/api/transactions`, {
+        return [];
+    }
+
+    mapAssetTokenData (result) {
+        return result ? this.mapTokenData(result.items, result.token_map, 'asset_id') : [];
+    }
+
+    mapContractTokenData (result) {
+        return result ? this.mapTokenData(result.items, result.token_map, 'contract_address') : [];
+    }
+
+    async getTransactionsByTokenId({ tokenId, start = 0, direction = 'all', type = '' }) {
+        try {
+            const node = NodeService.getCurrentNode();
+            const baseApiUrl = (node && node.mcashScanApi) ? node.mcashScanApi : 'https://api.mcashscan.io';
+            //
+            const address = this.selectedAccount;
+            const limit = 30;
+            let params = { limit, start: limit * start };
+            if (direction === 'all')
+                params = { ...params, address };
+            else if (direction === 'to') {
+                // sender
+                params = { ...params, from_address: address };
+            } else {
+                // receiver
+                params = { ...params, to_address: address };
+            }
+            if(!isNaN(tokenId)) {
+                params.asset_id = tokenId || 0;
+                if (type)
+                    params.type = type;
+                const { data = {} } = await axios.get(`${baseApiUrl}/api/transactions`, {
+                    params,
+                    timeout: 10000
+                }).catch(() => {
+                    return { data: { items: [], total: 0 } };
+                });
+                return { records: this.mapAssetTokenData(data), total: (data && data.total) || 0 };
+            }
+            params.contract_address = tokenId;
+            const { data } = await axios.get(`${baseApiUrl}/api/token_transfers`, {
                 params,
                 timeout: 10000
             }).catch(() => {
                 return { data: { items: [], total: 0 } };
             });
-            const { items: records = [], total } = data;
-            // if(tokenId !== 0)
-            //     newRecord = records;
-            // else {
-            //     if(records.length > 0) {
-            //         records.forEach((val, index) => {
-            //             if(val.contractData.call_value || val.contractData.amount)
-            //                 newRecord.push(val);
-            //         });
-            //     }else
-            //         newRecord = [];
-            // }
-            newRecord = records;
-            return { records: newRecord, total };
+            return { records: this.mapContractTokenData(data), total: (data && data.total) || 0 };
+        } catch (e) {
+            console.error('Error - getTransactionsByTokenId:', e);
         }
-        params.contract_address = tokenId;
-        const { data } = await axios.get(`${baseApiUrl}/api/token_transfers`, {
-            params,
-            timeout: 10000
-        }).catch(() => {
-            return { data: { items: [], total: 0 } };
-        });
-        const { items: records = [], total } = data;
-        return { records, total };
     }
 
     async getNews() {

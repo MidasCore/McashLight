@@ -1,0 +1,33 @@
+@import '../../assets/styles/theme.scss';
+
+.trx-list__header{
+  padding: 6px 0;
+  font-size: 13px;
+  width: 100%;
+  color: #505160;
+}
+
+.trx-list__body{
+  padding: 0 6px;
+  font-size: 90%;
+}
+
+.trx-list__line{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  line-height: 2;
+  color: #888998;
+}
+
+.trx-list__line-content{
+  flex: 1;
+}
+
+.trx-list__line-extra{
+  width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+  white-space: nowrap;
+}

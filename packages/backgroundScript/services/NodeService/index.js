@@ -9,31 +9,35 @@ const logger = new Logger('NodeService');
 
 const NodeService = {
     _nodes: {
+        // https://www.uuidgenerator.net/
         '6be34522-8ad5-4631-b785-755ea7d870d8': {
             name: 'Mainnet',
             fullNode: 'https://mainnet.mcash.network',
             solidityNode: 'https://mainnet.mcash.network',
             // eventServer: 'https://mainnet.mcash.network',
-            mcashScan: 'https://api.mcashscan.io',
-            // hideApi: true,
-            default: true
+            mcashScanApi: 'https://api.mcashscan.io',
+            mcashScanExplorer: 'https://mcashscan.io/#',
+            default: true,
+            readOnly: true
         },
         '6739be94-ee43-46af-9a62-690cf0947269': {
             name: 'Testnet',
             fullNode: 'https://testnet.mcash.network',
             solidityNode: 'https://testnet.mcash.network',
             // eventServer: 'https://rpc.testnet.mcash.network',
-            mcashScan: 'https://api.testnet.mcash.network',
-            // hideApi: true,
-            default: false
+            mcashScanApi: 'https://api-testnet.mcashscan.io',
+            mcashScanExplorer: 'https://testnet.mcashscan.io/#',
+            default: false,
+            readOnly: true
         },
-        // 'f0b1e38e-7bee-485e-9d3f-69410bf30681': {
-        //     name: 'Mainnet',
-        //     fullNode: '',
-        //     solidityNode: '',
-        //     eventServer: '',
-        //     default: false
-        // }
+        '72752377-8f6d-4f3b-9ee4-30dfce4cec63': {
+            name: 'Zeronet',
+            fullNode: 'https://zeronet.mcash.network',
+            solidityNode: 'https://zeronet.mcash.network',
+            mcashScanApi: 'https://api-zeronet.mcashscan.io',
+            mcashScanExplorer: 'https://zeronet.mcashscan.io/#',
+            readOnly: true
+        }
     },
 
     _selectedNode: '6be34522-8ad5-4631-b785-755ea7d870d8',
@@ -58,10 +62,10 @@ const NodeService = {
 
     init() {
         this._read();
-        this._updateTronWeb();
+        this._updateMcashWeb();
     },
 
-    _updateTronWeb(skipAddress = false) {
+    _updateMcashWeb(skipAddress = false) {
         const {
             fullNode,
             solidityNode,
@@ -80,10 +84,10 @@ const NodeService = {
 
     setAddress() {
         if(!this.mcashWeb)
-            this._updateTronWeb();
+            this._updateMcashWeb();
 
         if(!StorageService.selectedAccount)
-            return this._updateTronWeb(true);
+            return this._updateMcashWeb(true);
 
         this.mcashWeb.setAddress(
             StorageService.selectedAccount
@@ -96,7 +100,7 @@ const NodeService = {
         ));
 
         StorageService.selectNode(this._selectedNode);
-        this._updateTronWeb();
+        this._updateMcashWeb();
     },
 
     getNodes() {
@@ -114,7 +118,7 @@ const NodeService = {
         StorageService.selectNode(nodeID);
 
         this._selectedNode = nodeID;
-        this._updateTronWeb();
+        this._updateMcashWeb();
     },
 
     addNode(node) {
@@ -127,6 +131,17 @@ const NodeService = {
 
         this.save();
         return nodeID;
+    },
+
+    deleteNode(nodeID, changedSelectedNode = false) {
+        if (this._nodes[ nodeID ]) {
+            delete this._nodes[ nodeID ];
+            StorageService.deleteNode(nodeID);
+            if (changedSelectedNode) {
+                StorageService.selectNode(this._selectedNode);
+                this._updateMcashWeb();
+            }
+        }
     },
 
     async getSmartToken(address) {
@@ -148,6 +163,21 @@ const NodeService = {
             logger.error(`Failed to fetch token ${ address }:`, ex);
             return false;
         }
+    },
+
+    getBasicToken(tokenId) {
+        try {
+            return this.mcashWeb.mcash.getTokenById(tokenId);
+        } catch(ex) {
+            logger.error(`Failed to fetch token ${ tokenId }:`, ex);
+            return false;
+        }
+    },
+
+    getPriceApiUrl(fromCodes) {
+        if (this._selectedNode === '6be34522-8ad5-4631-b785-755ea7d870d8')
+            return `https://api.midasprotocol.com/token/v1/prices?fromCodes=${fromCodes}&toCodes=USD,BTC,ETH`;
+        return '';
     }
 };
 

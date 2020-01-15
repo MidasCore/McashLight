@@ -5,6 +5,11 @@ import { BUTTON_TYPE } from '@mcashlight/lib/constants';
 import { PopupAPI } from '@mcashlight/lib/api';
 import Button from '../../components/Button';
 
+const onKeyPress = ({ key }, onEnter) => {
+    if(key && key.toLowerCase() === 'enter')
+        onEnter();
+};
+
 class Backup extends React.Component {
     constructor () {
         super();
@@ -73,7 +78,11 @@ class Backup extends React.Component {
                 <FormattedMessage id='ACCOUNTS.VERIFY.LABEL'/>
                 <div className={`input-group${errorPassword ? ' error' : ''}`}>
                     <div className='input'>
-                        <input type='password' autoFocus onChange={ this.onPasswordChange }/>
+                        <input
+                            type='password' autoFocus
+                            onChange={ this.onPasswordChange }
+                            onKeyPress={e => onKeyPress(e, this.onVerify)}
+                        />
                     </div>
                     <div className='tipError'>
                         { errorPassword ? <FormattedMessage id={errorPassword} /> : '' }

@@ -17,12 +17,6 @@ import SendController from '@mcashlight/popup/src/controllers/SendController';
 import TransactionsController from '@mcashlight/popup/src/controllers/TransactionsController';
 import SettingController from '@mcashlight/popup/src/controllers/SettingController';
 import AddTokenController from '@mcashlight/popup/src/controllers/AddTokenController';
-import BankController from '@mcashlight/popup/src/controllers/TronBankController';
-import BankRecordController from '@mcashlight/popup/src/controllers/BankRecordController';
-import BankDetailController from '@mcashlight/popup/src/controllers/BankDetailController';
-import BankHelplController from '@mcashlight/popup/src/controllers/TronBankHelp';
-// import ActivityDetailController from '@mcashlight/popup/src/controllers/ActivityDetailController';
-import DappListController from '@mcashlight/popup/src/controllers/DappListController';
 import ActiveAccountController from '@mcashlight/popup/src/controllers/ActiveAccountController';
 
 import 'antd-mobile/dist/antd-mobile.css';
@@ -72,28 +66,13 @@ class App extends React.Component {
                 dom = <SendController accounts={accounts} />;
                 break;
             case APP_STATE.TRANSACTIONS:
-                dom = <TransactionsController prices={prices} accounts={accounts} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
+                dom = <TransactionsController prices={prices} accounts={accounts} nodes={nodes} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
                 break;
             case APP_STATE.SETTING:
                 dom = <SettingController lock={lock} version={version} language={language} prices={prices} nodes={nodes} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
                 break;
             case APP_STATE.ADD_M20_TOKEN:
                 dom = <AddTokenController tokens={accounts.selected.tokens} onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
-                break;
-            case APP_STATE.TRONBANK:
-                dom = <BankController accounts={accounts} language={language} />;
-                break;
-            case APP_STATE.TRONBANK_RECORD:
-                dom = <BankRecordController accounts={accounts} />;
-                break;
-            case APP_STATE.TRONBANK_DETAIL:
-                dom = <BankDetailController accounts={accounts} />;
-                break;
-            case APP_STATE.TRONBANK_HELP:
-                dom = <BankHelplController />;
-                break;
-            case APP_STATE.DAPP_LIST:
-                dom = <DappListController onCancel={ () => PopupAPI.changeState(APP_STATE.READY) } />;
                 break;
             case APP_STATE.ACTIVE_ACCOUNT:
                 dom = <ActiveAccountController />;

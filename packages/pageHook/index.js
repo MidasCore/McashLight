@@ -74,9 +74,20 @@ const pageHook = {
 
     setAddress(address) {
         // logger.info('McashLight: New address configured');
-
-        this.proxiedMethods.setAddress(address);
-        window.mcashWeb.ready = true;
+        try {
+            if (!window.mcashWeb.isAddress(address)) {
+                window.mcashWeb.defaultAddress = {
+                    hex: false,
+                    base58: false
+                };
+                window.mcashWeb.ready = false;
+            } else {
+                this.proxiedMethods.setAddress(address);
+                window.mcashWeb.ready = true;
+            }
+        } catch (e) {
+            logger.error('setAddress:', e);
+        }
     },
 
     setNode(node) {

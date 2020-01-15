@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { BigNumber } from 'bignumber.js';
 import { PopupAPI } from '@mcashlight/lib/api';
+import Utils from '@mcashlight/lib/utils';
 import Button from '@mcashlight/popup/src/components/Button';
 import { APP_STATE } from '@mcashlight/lib/constants';
 import swal from 'sweetalert2';
@@ -33,11 +34,13 @@ class ActiveAccountController extends React.Component {
     componentDidMount() {
         const { selected, accounts } = this.props.accounts;
         const receiverAddress = selected ? selected.address : '';
-        const filterAccounts = Object.keys(accounts).filter((address) => address !== receiverAddress);
+        const activateFee = this.state.amount.value;
         const paymentAccounts = {};
-        if (filterAccounts.length > 0) {
-            filterAccounts.forEach(v => {
-                paymentAccounts[ v ] = { ...accounts[ v ] };
+        if (accounts && Object.keys(accounts).length > 0) {
+            Object.entries(accounts).forEach(([address, objAccount]) => {
+                const enoughBalance = new BigNumber(objAccount.balance || 0).shiftedBy(-CHAIN_DECIMALS).gte(activateFee);
+                if (address !== receiverAddress && enoughBalance)
+                    paymentAccounts[ address ] = Object.assign({}, objAccount);
             });
         }
         this.setState({
@@ -114,7 +117,8 @@ class ActiveAccountController extends React.Component {
                     });
                 });
         }).catch(error => {
-            swal(JSON.stringify(error), '', 'error');
+            const errorMessage = typeof error === 'string' ? Utils.prettyErrorMessage(error) : JSON.stringify(error);
+            swal(errorMessage, '', 'error');
             this.setState({
                 loading: false
             });

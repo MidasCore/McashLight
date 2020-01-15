@@ -8,6 +8,11 @@ import { PopupAPI } from '@mcashlight/lib/api';
 
 import './PrivateKeyImport.scss';
 
+const onKeyPress = ({ key }, onEnter) => {
+    if(key && key.toLowerCase() === 'enter')
+        onEnter();
+};
+
 class PrivateKeyImport extends React.Component {
     state = {
         privateKey: '',
@@ -46,7 +51,9 @@ class PrivateKeyImport extends React.Component {
         });
     }
 
-    onSubmit() {
+    onSubmit = () => {
+        const { isValid } = this.state;
+        if (!isValid) return;
         const { privateKey } = this.state;
         const { name } = this.props;
 
@@ -56,7 +63,7 @@ class PrivateKeyImport extends React.Component {
         );
 
         PopupAPI.resetState();
-    }
+    };
 
     render() {
         const { onCancel } = this.props;
@@ -71,7 +78,7 @@ class PrivateKeyImport extends React.Component {
         return (
             <div className='insetContainer privateKeyImport'>
                 <div className='pageHeader'>
-                    <div className='back' onClick={ onCancel }></div>
+                    <div className='back' onClick={ onCancel } />
                     <FormattedMessage id='CREATION.RESTORE.PRIVATE_KEY.TITLE' />
                 </div>
                 <div className={`greyModal${!isValid && error ? ' error' : ''}`}>
@@ -80,12 +87,14 @@ class PrivateKeyImport extends React.Component {
                     </div>
                     <div className='inputUnit'>
                         <textarea
+                            autoFocus
                             placeholder={formatMessage({ id: 'PRIVATE_KEY_IMPORT.PLACEHOLDER' })}
                             className='privateKeyInput'
                             rows={ 5 }
                             value={ privateKey }
                             onChange={ this.onChange }
                             tabIndex={ 1 }
+                            onKeyPress={ event => onKeyPress(event, this.onSubmit) }
                         />
                         {!isValid ? <div className='tipError'>{error ? <FormattedMessage id={error} /> : null}</div> : null}
                     </div>
@@ -94,7 +103,7 @@ class PrivateKeyImport extends React.Component {
                         <Button
                             id='BUTTON.CONTINUE'
                             isValid={ isValid }
-                            onClick={ () => isValid && this.onSubmit() }
+                            onClick={ this.onSubmit }
                             tabIndex={ 2 }
                         />
                     </div>

@@ -78,9 +78,7 @@ class Input extends React.Component {
             intl
         } = this.props;
 
-        let {
-            placeholder = ''
-        } = this.props;
+        let { placeholder = '' } = this.props;
 
         const { isFocused } = this.state;
 
