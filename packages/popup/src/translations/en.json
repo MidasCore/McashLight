@@ -152,6 +152,7 @@
     "CONFIRMATIONS.WHITELIST.BODY": "This allows McashLight to automatically sign similar transactions on your behalf",
 
     "CONFIRMATIONS.OPTIONS.NO": "Don't automatically sign",
+    "CONFIRMATIONS.OPTIONS.ONE_MINUTE": "For one minute",
     "CONFIRMATIONS.OPTIONS.FIFTEEN_MINUTES": "For fifteen minutes",
     "CONFIRMATIONS.OPTIONS.THIRTY_MINUTES": "For thirty minutes",
     "CONFIRMATIONS.OPTIONS.ONE_HOUR": "For one hour",

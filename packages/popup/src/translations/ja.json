@@ -152,6 +152,7 @@
   "CONFIRMATIONS.WHITELIST.BODY": "McashLightがあなたに代わって自動的に取引に署名することを許可する",
 
   "CONFIRMATIONS.OPTIONS.NO": "自動サインを無効にする",
+  "CONFIRMATIONS.OPTIONS.ONE_MINUTE": "自動サインを1分以内に有効にする",
   "CONFIRMATIONS.OPTIONS.FIFTEEN_MINUTES": "自動サインを15分以内に有効にする",
   "CONFIRMATIONS.OPTIONS.THIRTY_MINUTES": "自動サインを30分以内に有効にする",
   "CONFIRMATIONS.OPTIONS.ONE_HOUR": "自動サインを一時間以内に有効にする",
@@ -190,8 +191,8 @@
   "SETTINGS.NODES": "Node selection",
   "SETTINGS.NODES.FULL_NODE": "Full node",
   "SETTINGS.NODES.SOLIDITY_NODE": "Solidity node",
-  "SETTINGS.NODES.SCAN": "Mcashscan",
   "SETTINGS.NODES.EVENT_SERVER": "Event server",
+  "SETTINGS.NODES.SCAN": "Mcashscan",
   "SETTINGS.NODE.DELETE": "Delete Node",
   "SETTINGS.NODE.CONFIRM_DELETE": "Are you sure you want to delete {name} node?",
   "SETTINGS.NODE.DELETE.SUCCESS": "Delete Node Successful!",

@@ -44,6 +44,9 @@ class ConfirmationController extends React.Component {
             value: false,
             label: formatMessage({ id: 'CONFIRMATIONS.OPTIONS.NO' })
         }, {
+            value: 60 * 1000,
+            label: formatMessage({ id: 'CONFIRMATIONS.OPTIONS.ONE_MINUTE' })
+        }, {
             value: 15 * 60 * 1000,
             label: formatMessage({ id: 'CONFIRMATIONS.OPTIONS.FIFTEEN_MINUTES' })
         }, {
